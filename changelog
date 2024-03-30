@@ -1,3 +1,6 @@
+Version 4.4.7
+- Fix cmakefile to use system installed libraries by default
+
 Version 4.4.6
 - Update dependency on libcifpp to version 7
 
