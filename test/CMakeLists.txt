@@ -35,7 +35,7 @@ if(MSVC)
 	target_compile_options(unit-test-dssp PRIVATE /EHsc)
 endif()
 
-if(${Catch2_VERSION} VERSION_GREATER_EQUAL 3.0.0)
+if("${Catch2_VERSION}" VERSION_GREATER_EQUAL 3.0.0)
 	target_compile_definitions(unit-test-dssp PUBLIC CATCH22=0)
 else()
 	target_compile_definitions(unit-test-dssp PUBLIC CATCH22=1)
