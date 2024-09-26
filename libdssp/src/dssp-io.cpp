@@ -747,12 +747,14 @@ void annotateDSSP(cif::datablock &db, const dssp &dssp, bool writeOther, bool wr
 {
 	using namespace std::literals;
 
-	auto &validator = const_cast<cif::validator &>(*db.get_validator());
-	if (validator.get_validator_for_category("dssp_struct_summary") == nullptr)
-	{
-		auto dssp_extension = cif::load_resource("dssp-extension.dic");
-		if (dssp_extension)
-			cif::extend_dictionary(validator, *dssp_extension);
+	if (db.get_validator() != nullptr) {
+		auto &validator = const_cast<cif::validator &>(*db.get_validator());
+		if (validator.get_validator_for_category("dssp_struct_summary") == nullptr)
+		{
+			auto dssp_extension = cif::load_resource("dssp-extension.dic");
+			if (dssp_extension)
+				cif::extend_dictionary(validator, *dssp_extension);
+		}
 	}
 
 	if (dssp.empty())
