@@ -1,7 +1,17 @@
+# Use the version of the parent list file, if any. May need a fix someday.
+if(NOT CMAKE_PARENT_LIST_FILE)
+	set(PROJECT_VERSION 4.4.8)
+endif()
+
+project(libdssp VERSION ${PROJECT_VERSION})
+
 include(CMakePackageConfigHelpers)
 
 # We do not want to write an export file for all our symbols...
 set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS ON)
+
+# Create a revision file, containing the current git version info
+write_version_header("${CMAKE_CURRENT_SOURCE_DIR}/src" LIB_NAME libdssp)
 
 # The DSSP code is in a separate library, optionally to be used by others
 add_library(dssp)
