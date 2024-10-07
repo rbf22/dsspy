@@ -115,6 +115,8 @@ if(NOT (libmcfp_FOUND OR TARGET libmcfp))
 endif()
 
 if(NOT TARGET cifpp AND NOT cifpp_FOUND)
+	include(FetchContent)
+
 	find_package(cifpp 7 QUIET)
 
 	if(NOT cifpp_FOUND)
@@ -148,6 +150,22 @@ endif()
 install(TARGETS ${PROJECT_NAME}
 	RUNTIME DESTINATION bin
 )
+
+if(NOT USE_RSRC)
+	# When building cifpp ourselves, we need to find where libcifpp
+	# expects the data files to be located.
+	if(TARGET cifpp)
+		get_target_property(DSSP_DATA_DIR cifpp CIFPP_DATA_DIR)
+
+		install(
+			FILES ${CIFPP_SHARE_DIR}/mmcif_pdbx.dic
+			${CIFPP_SHARE_DIR}/mmcif_ddl.dic
+			${CMAKE_CURRENT_SOURCE_DIR}/libdssp/mmcif_pdbx/dssp-extension.dic
+			DESTINATION ${DSSP_DATA_DIR})
+	else()
+
+	endif()
+endif()
 
 if(BUILD_DOCUMENTATION)
 	add_subdirectory(doc)
