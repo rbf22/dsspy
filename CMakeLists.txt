@@ -121,15 +121,19 @@ if(NOT TARGET cifpp AND NOT cifpp_FOUND)
 
 	if(NOT cifpp_FOUND)
 		set(CIFPP_DOWNLOAD_CCD OFF)
+		set(SAVED_BUILD_TESTING "${BUILD_TESTING}")
+		set(BUILD_TESTING OFF)
 
 		FetchContent_Declare(
 			cifpp
 			${EXLC}
 			GIT_REPOSITORY https://github.com/pdb-redo/libcifpp.git
-			GIT_TAG 9542e211bc1dc28e41cb839b284d45171d67fce4
+			GIT_TAG v7.0.7
 		)
 
 		FetchContent_MakeAvailable(cifpp)
+
+		set(BUILD_TESTING ${SAVED_BUILD_TESTING})
 	endif()
 endif()
 
