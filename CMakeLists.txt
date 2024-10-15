@@ -126,7 +126,7 @@ if(NOT TARGET cifpp AND NOT cifpp_FOUND)
 			cifpp
 			${EXLC}
 			GIT_REPOSITORY https://github.com/pdb-redo/libcifpp.git
-			GIT_TAG v7.0.7
+			GIT_TAG 9542e211bc1dc28e41cb839b284d45171d67fce4
 		)
 
 		FetchContent_MakeAvailable(cifpp)
