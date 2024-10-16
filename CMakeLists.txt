@@ -160,10 +160,11 @@ if(NOT USE_RSRC)
 	# expects the data files to be located.
 	if(TARGET cifpp)
 		get_target_property(DSSP_DATA_DIR cifpp CIFPP_DATA_DIR)
+		get_target_property(CIFPP_SOURCE_DIR cifpp SOURCE_DIR)
 
 		install(
-			FILES ${CIFPP_SHARE_DIR}/mmcif_pdbx.dic
-			${CIFPP_SHARE_DIR}/mmcif_ddl.dic
+			FILES ${CIFPP_SOURCE_DIR}/rsrc/mmcif_pdbx.dic
+			${CIFPP_SOURCE_DIR}/rsrc/mmcif_ddl.dic
 			${CMAKE_CURRENT_SOURCE_DIR}/libdssp/mmcif_pdbx/dssp-extension.dic
 			DESTINATION ${DSSP_DATA_DIR})
 	else()
