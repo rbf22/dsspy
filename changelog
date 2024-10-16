@@ -1,3 +1,6 @@
+Version 4.4.9
+- Support for installing in environments that do not use resources
+
 Version 4.4.8
 - Fix writing version numbers
 
