@@ -922,6 +922,10 @@ save__dssp_statistics.entry_id
 	_item.category_id        dssp_statistics
 	_item.mandatory_code     yes
 	_item_type.code          code
+	#
+	_item_linked.child_name   "_dssp_statistics.entry_id"
+	_item_linked.parent_name  "_entry.id"
+	#
 	save_
 
 save__dssp_statistics.nr_of_residues
@@ -1025,6 +1029,10 @@ save__dssp_statistics_hbond.entry_id
 	_item.category              dssp_statistics_hbond
 	_item.mandatory_code        yes
 	_item_type.code             code
+	#
+	_item_linked.child_name   "_dssp_statistics_hbond.entry_id"
+	_item_linked.parent_name  "_entry.id"
+	#
 	save_
 
 save__dssp_statistics_hbond.type
@@ -1143,6 +1151,10 @@ save__dssp_statistics_histogram.entry_id
 	_item.category          dssp_statistics_histogram
 	_item.mandatory_code    yes
 	_item_type.code         code
+	#
+	_item_linked.child_name   "_dssp_statistics_histogram.entry_id"
+	_item_linked.parent_name  "_entry.id"
+	#
 	save_
 
 save__dssp_statistics_histogram.type
@@ -1526,6 +1538,10 @@ save__dssp_struct_summary.entry_id
 	_item.category         dssp_struct_summary
 	_item.mandatory_code   yes
 	_item_type.code        code
+	#
+	_item_linked.child_name   "_dssp_struct_summary.entry_id"
+	_item_linked.parent_name  "_entry.id"
+	#
 	save_
 
 save__dssp_struct_summary.label_comp_id
