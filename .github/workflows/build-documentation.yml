@@ -29,27 +29,15 @@ jobs:
         echo "build-output-dir=${{ github.workspace }}/build" >> "$GITHUB_OUTPUT"
 
     - name: Install dependencies Ubuntu
-      run: sudo apt-get update && sudo apt-get install cmake doxygen
+      run: sudo apt-get update && sudo apt-get install cmake doxygen pandoc
 
     - name: Configure CMake
       run: cmake -S . -B build -DBUILD_DOCUMENTATION=ON -DBUILD_TESTING=OFF
 
-    - uses: actions/setup-python@v5
-      with:
-        python-version: '3.13'
-        cache: 'pip' # caching pip dependencies
-    - run: pip install -r docs/requirements.txt
-
-    - name: Run Sphinx
-      run: |
-        cmake --build build --target Sphinx-mcfp
-        ls -l ${{ steps.strings.outputs.build-output-dir }}
-        ls -l ${{ steps.strings.outputs.build-output-dir }}/docs/sphinx
-
     - name: Upload artifact
       uses: actions/upload-pages-artifact@v2
       with:
-        path: ${{ steps.strings.outputs.build-output-dir }}/docs/sphinx
+        path: ${{ steps.strings.outputs.build-output-dir }}/doc
 
   deploy:
     environment:
