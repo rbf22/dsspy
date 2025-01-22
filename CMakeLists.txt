@@ -109,7 +109,7 @@ if(NOT (mcfp_FOUND OR TARGET mcfp))
 		mcfp
 		${EXLC}
 		GIT_REPOSITORY https://github.com/mhekkel/libmcfp
-		GIT_TAG v1.3.1)
+		GIT_TAG v1.3.4)
 
 	FetchContent_MakeAvailable(mcfp)
 endif()
