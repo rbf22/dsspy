@@ -96,9 +96,9 @@ endif()
 set(CMAKE_THREAD_PREFER_PTHREAD)
 set(THREADS_PREFER_PTHREAD_FLAG)
 find_package(Threads)
-find_package(libmcfp QUIET)
+find_package(mcfp QUIET)
 
-if(NOT (libmcfp_FOUND OR TARGET libmcfp))
+if(NOT (mcfp_FOUND OR TARGET mcfp))
 	include(FetchContent)
 
 	if(CMAKE_VERSION GREATER_EQUAL 3.28)
@@ -106,12 +106,12 @@ if(NOT (libmcfp_FOUND OR TARGET libmcfp))
 	endif()
 
 	FetchContent_Declare(
-		libmcfp
+		mcfp
 		${EXLC}
-		GIT_REPOSITORY https://github.com/mhekkel/libmcfp
+		GIT_REPOSITORY https://github.com/mhekkel/mcfp
 		GIT_TAG v1.3.1)
 
-	FetchContent_MakeAvailable(libmcfp)
+	FetchContent_MakeAvailable(mcfp)
 endif()
 
 if(NOT TARGET cifpp AND NOT cifpp_FOUND)
@@ -141,7 +141,7 @@ add_subdirectory(libdssp)
 
 add_executable(mkdssp ${CMAKE_CURRENT_SOURCE_DIR}/src/mkdssp.cpp)
 
-target_link_libraries(mkdssp PRIVATE libmcfp::libmcfp dssp::dssp)
+target_link_libraries(mkdssp PRIVATE mcfp::mcfp dssp::dssp)
 
 if(USE_RSRC)
 	mrc_target_resources(mkdssp
