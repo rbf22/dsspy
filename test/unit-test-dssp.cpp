@@ -28,11 +28,7 @@
 
 #define CATCH_CONFIG_RUNNER
 
-#if CATCH22
-# include <catch2/catch.hpp>
-#else
-# include <catch2/catch_all.hpp>
-#endif
+#include <catch2/catch_all.hpp>
 
 #include "../libdssp/src/dssp-io.hpp"
 #include "../src/revision.hpp"
