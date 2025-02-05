@@ -63,12 +63,7 @@ int main(int argc, char *argv[])
 	Catch::Session session; // There must be exactly one instance
 
 	// Build a new parser on top of Catch2's
-#if CATCH22
-	using namespace Catch::clara;
-#else
-	// Build a new parser on top of Catch2's
 	using namespace Catch::Clara;
-#endif
 
 	std::filesystem::path rsrc_dir;
 
