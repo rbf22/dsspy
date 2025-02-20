@@ -96,7 +96,7 @@ endif()
 set(CMAKE_THREAD_PREFER_PTHREAD)
 set(THREADS_PREFER_PTHREAD_FLAG)
 find_package(Threads)
-find_package(mcfp QUIET)
+find_package(mcfp 1.3.5 QUIET)
 
 if(NOT (mcfp_FOUND OR TARGET mcfp))
 	include(FetchContent)
@@ -109,7 +109,7 @@ if(NOT (mcfp_FOUND OR TARGET mcfp))
 		mcfp
 		${EXLC}
 		GIT_REPOSITORY https://github.com/mhekkel/libmcfp
-		GIT_TAG v1.3.4)
+		GIT_TAG v1.3.5)
 
 	FetchContent_MakeAvailable(mcfp)
 endif()
