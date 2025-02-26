@@ -1,11 +1,31 @@
-## File: dssp-extension.dic
-## Date: 30-May-2023
-##
-# Items containing Secondary Structure information as written by e.g. DSSP
-#
-#
+# File: dssp-extension.dic
+# Date: 30-May-2023
 
-data_mmcif_pdbx-def-dssp.dic
+data_dssp-extension.dic
+
+_datablock.id			dssp-extension.dic
+_datablock.description
+;
+	This data block holds the dictionary for Secondary Structure information as written by e.g. DSSP
+;
+
+_dictionary.title			dssp-extension.dic
+_dictionary.datablock_id	dssp-extension.dic
+_dictionary.version			1.1
+
+loop_
+_dictionary_history.version
+_dictionary_history.update
+_dictionary_history.revision
+1.0	2023-05-30
+;
+	Initial release
+;
+1.1	2025-02-26
+;
+	Changes (mlh)
+	+ Added dictionary blocks
+;
 
 ########################################
 ##  Category dssp_struct_bridge_pairs ##

@@ -1,3 +1,7 @@
+Version 4.4.11
+- Write proper audit_conform records
+- Updated dssp-extension.dic file to include version info
+
 Version 4.4.10
 - Support for installing in environments that do not use resources,
   this time for real.

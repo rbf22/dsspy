@@ -250,16 +250,14 @@ void writeBridgePairs(cif::datablock &db, const dssp &dssp)
 
 	for (auto &res : dssp)
 	{
-		cif::row_initializer data({
-			{ "id", hb.get_unique_id("") },
+		cif::row_initializer data({ { "id", hb.get_unique_id("") },
 			{ "label_comp_id", res.compound_id() },
 			{ "label_seq_id", res.seq_id() },
 			{ "label_asym_id", res.asym_id() },
 			// { "auth_comp_id", res.compound_id() },
 			{ "auth_seq_id", res.auth_seq_id() },
 			{ "auth_asym_id", res.auth_asym_id() },
-			{ "pdbx_PDB_ins_code", res.pdb_ins_code() }
-		});
+			{ "pdbx_PDB_ins_code", res.pdb_ins_code() } });
 
 		for (int i : { 0, 1 })
 		{
@@ -338,7 +336,7 @@ void writeSheets(cif::datablock &db, const dssp &dssp)
 
 	// create a list of strands, based on the SS info in DSSP. Store sheet number along with the strand.
 
-	std::map<std::tuple<int,int>, res_list> strands;
+	std::map<std::tuple<int, int>, res_list> strands;
 	std::set<int> sheetNrs;
 
 	for (auto &res : dssp)
@@ -346,7 +344,7 @@ void writeSheets(cif::datablock &db, const dssp &dssp)
 		if (res.type() != dssp::structure_type::Strand and res.type() != dssp::structure_type::Betabridge)
 			continue;
 
-		strands[{res.sheet(), res.strand()}].emplace_back(res);
+		strands[{ res.sheet(), res.strand() }].emplace_back(res);
 		sheetNrs.insert(res.sheet());
 	}
 
@@ -359,22 +357,18 @@ void writeSheets(cif::datablock &db, const dssp &dssp)
 	{
 		auto sheetID = cif::cif_id_for_number(sheetNr - 1);
 
-		struct_sheet.emplace({
-			{ "id", sheetID },
+		struct_sheet.emplace({ { "id", sheetID },
 			{ "number_strands",
-				std::count_if(strands.begin(), strands.end(), [nr = sheetNr](std::tuple<std::tuple<int,int>, res_list> const &s)
-				{
+				std::count_if(strands.begin(), strands.end(), [nr = sheetNr](std::tuple<std::tuple<int, int>, res_list> const &s)
+					{
 					const auto &[strandID, strand] = s;
-					return strand.front().sheet() == nr;
-				})
-			}
-		});
+					return strand.front().sheet() == nr; }) } });
 
 		for (auto &&[strandTuple, strand] : strands)
 		{
 			if (strand.front().sheet() != sheetNr)
 				continue;
-			
+
 			std::string strandID = cif::cif_id_for_number(strand.front().strand() - 1);
 
 			std::sort(strand.begin(), strand.end(), [](dssp::residue_info const &a, dssp::residue_info const &b)
@@ -383,8 +377,7 @@ void writeSheets(cif::datablock &db, const dssp &dssp)
 			auto &beg = strand.front();
 			auto &end = strand.back();
 
-			struct_sheet_range.emplace({
-				{ "sheet_id", sheetID },
+			struct_sheet_range.emplace({ { "sheet_id", sheetID },
 				{ "id", strandID },
 				{ "beg_label_comp_id", beg.compound_id() },
 				{ "beg_label_asym_id", beg.asym_id() },
@@ -475,8 +468,7 @@ void writeLadders(cif::datablock &db, const dssp &dssp)
 		const auto &[beg1, beg2] = l.pairs.front();
 		const auto &[end1, end2] = l.pairs.back();
 
-		dssp_struct_ladder.emplace({
-			{ "id", cif::cif_id_for_number(l.ladder) },
+		dssp_struct_ladder.emplace({ { "id", cif::cif_id_for_number(l.ladder) },
 			{ "sheet_id", cif::cif_id_for_number(l.sheet) },
 			{ "range_id_1", cif::cif_id_for_number(beg1.strand() - 1) },
 			{ "range_id_2", cif::cif_id_for_number(beg2.strand() - 1) },
@@ -528,7 +520,7 @@ void writeStatistics(cif::datablock &db, const dssp &dssp)
 		{ "nr_of_ss_bridges_total", stats.count.SS_bridges },
 		{ "nr_of_ss_bridges_intra_chain", stats.count.intra_chain_SS_bridges },
 		{ "nr_of_ss_bridges_inter_chain", stats.count.SS_bridges - stats.count.intra_chain_SS_bridges } });
-	
+
 	if (stats.accessible_surface > 0)
 		(*stats_i)["accessible_surface_of_protein"] = stats.accessible_surface;
 
@@ -612,9 +604,9 @@ void writeSummary(cif::datablock &db, const dssp &dssp)
 	// prime the category with the field labels we need, this is to ensure proper order in writing out the data.
 
 	for (auto label : { "entry_id", "label_comp_id", "label_asym_id", "label_seq_id", "secondary_structure",
-			"ss_bridge", "helix_3_10", "helix_alpha", "helix_pi", "helix_pp", "bend", "chirality", "sheet",
-			"strand", "ladder_1", "ladder_2", "accessibility", "TCO", "kappa", "alpha", "phi", "psi",
-			"x_ca", "y_ca", "z_ca"})
+			 "ss_bridge", "helix_3_10", "helix_alpha", "helix_pi", "helix_pp", "bend", "chirality", "sheet",
+			 "strand", "ladder_1", "ladder_2", "accessibility", "TCO", "kappa", "alpha", "phi", "psi",
+			 "x_ca", "y_ca", "z_ca" })
 		dssp_struct_summary.add_item(label);
 
 	for (auto res : dssp)
@@ -738,7 +730,7 @@ void writeSummary(cif::datablock &db, const dssp &dssp)
 			data.emplace_back("psi", *res.psi(), 1);
 		else
 			data.emplace_back("psi", ".");
-		
+
 		dssp_struct_summary.emplace(std::move(data));
 	}
 }
@@ -747,7 +739,8 @@ void annotateDSSP(cif::datablock &db, const dssp &dssp, bool writeOther, bool wr
 {
 	using namespace std::literals;
 
-	if (db.get_validator() != nullptr) {
+	if (db.get_validator() != nullptr)
+	{
 		auto &validator = const_cast<cif::validator &>(*db.get_validator());
 		if (validator.get_validator_for_category("dssp_struct_summary") == nullptr)
 		{
@@ -840,7 +833,7 @@ void annotateDSSP(cif::datablock &db, const dssp &dssp, bool writeOther, bool wr
 					foundTypes[id] = 1;
 				}
 
-				structConf.emplace({
+				structConf.emplace({ //
 					{ "conf_type_id", id },
 					{ "id", id + std::to_string(foundTypes[id]++) },
 					// { "pdbx_PDB_helix_id", vS(12, 14) },
@@ -858,8 +851,7 @@ void annotateDSSP(cif::datablock &db, const dssp &dssp, bool writeOther, bool wr
 					{ "beg_auth_seq_id", rb.auth_seq_id() },
 					{ "end_auth_comp_id", re.compound_id() },
 					{ "end_auth_asym_id", re.auth_asym_id() },
-					{ "end_auth_seq_id", re.auth_seq_id() }
-				});
+					{ "end_auth_seq_id", re.auth_seq_id() } });
 
 				st = t;
 			}
@@ -875,12 +867,18 @@ void annotateDSSP(cif::datablock &db, const dssp &dssp, bool writeOther, bool wr
 		}
 	}
 
+	auto &audit_conform = db["audit_conform"];
+	audit_conform.erase(cif::key("dict_name") == "dssp-extension.dic");
+	audit_conform.emplace({ //
+		{ "dict_name", "dssp-extension.dic" },
+		{ "dict_version", "1.1" },
+		{ "dict_location", "https://pdb-redo.eu/dssp/dssp-extensions.dic" } });
+
 	auto &software = db["software"];
-	software.emplace({
+	software.emplace({ //
 		{ "pdbx_ordinal", software.get_unique_id("") },
 		{ "name", "dssp" },
 		{ "version", klibdsspVersionNumber },
 		{ "date", klibdsspRevisionDate },
-		{ "classification", "model annotation" }
-	});
+		{ "classification", "model annotation" } });
 }
