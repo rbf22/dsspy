@@ -747,15 +747,15 @@ void annotateDSSP(cif::datablock &db, const dssp &dssp, bool writeOther, bool wr
 {
 	using namespace std::literals;
 
-	if (db.get_validator() != nullptr) {
-		auto &validator = const_cast<cif::validator &>(*db.get_validator());
-		if (validator.get_validator_for_category("dssp_struct_summary") == nullptr)
-		{
-			auto dssp_extension = cif::load_resource("dssp-extension.dic");
-			if (dssp_extension)
-				cif::extend_dictionary(validator, *dssp_extension);
-		}
-	}
+	auto &audit_conform = db["audit_conform"];
+	audit_conform.erase(cif::key("dict_name") == "dssp-extension.dic");
+	audit_conform.emplace({ //
+		{ "dict_name", "dssp-extension.dic" },
+		{ "dict_version", "1.1" },
+		{ "dict_location", "https://pdb-redo.eu/dssp/dssp-extensions.dic" } });
+
+	// Re-load the dictionary
+	db.load_dictionary();
 
 	if (dssp.empty())
 	{
