@@ -866,13 +866,6 @@ void annotateDSSP(cif::datablock &db, const dssp &dssp, bool writeOther, bool wr
 		}
 	}
 
-	auto &audit_conform = db["audit_conform"];
-	audit_conform.erase(cif::key("dict_name") == "dssp-extension.dic");
-	audit_conform.emplace({ //
-		{ "dict_name", "dssp-extension.dic" },
-		{ "dict_version", "1.1" },
-		{ "dict_location", "https://pdb-redo.eu/dssp/dssp-extensions.dic" } });
-
 	auto &software = db["software"];
 	software.emplace({ //
 		{ "pdbx_ordinal", software.get_unique_id("") },
