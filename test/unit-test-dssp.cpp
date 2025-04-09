@@ -110,7 +110,7 @@ TEST_CASE("ut_dssp")
 	std::string line_t, line_r;
 	CHECK((std::getline(test, line_t) and std::getline(reference, line_r)));
 
-	char kHeaderLineStart[] = "==== Secondary Structure Definition by the program DSSP, NKI version 4.4.5                         ====";
+	char kHeaderLineStart[] = "==== Secondary Structure Definition by the program DSSP, NKI version 4.5.0                         ====";
 	memcpy(kHeaderLineStart + 69, kVersionNumber, strlen(kVersionNumber));
 
 	CHECK(line_t.compare(0, std::strlen(kHeaderLineStart), kHeaderLineStart) == 0);

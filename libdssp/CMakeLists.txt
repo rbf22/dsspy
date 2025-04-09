@@ -1,6 +1,6 @@
 # Use the version of the parent list file, if any. May need a fix someday.
 if(NOT CMAKE_PARENT_LIST_FILE)
-	set(PROJECT_VERSION 4.4.8)
+	set(PROJECT_VERSION 4.5.0)
 endif()
 
 project(libdssp VERSION ${PROJECT_VERSION})
