@@ -94,7 +94,7 @@ TEST_CASE("ut_dssp")
 {
 	using namespace std::literals;
 
-	cif::file f(gTestDir / "1cbs.cif.gz");
+	auto f = cif::pdb::read(gTestDir / "1cbs.cif.gz");
 	REQUIRE(f.is_valid());
 
 	dssp dssp(f.front(), 1, 3, true);
@@ -146,7 +146,7 @@ TEST_CASE("ut_mmcif_2")
 	using namespace std::literals;
 	using namespace cif::literals;
 
-	cif::file f(gTestDir / "1cbs.cif.gz");
+	auto f = cif::pdb::read(gTestDir / "1cbs.cif.gz");
 	REQUIRE(f.is_valid());
 
 	dssp dssp(f.front(), 1, 3, true);
@@ -178,7 +178,7 @@ TEST_CASE("ut_mmcif_2")
 
 TEST_CASE("dssp_1")
 {
-	cif::file f(gTestDir / "1cbs.cif.gz");
+	auto f = cif::pdb::read(gTestDir / "1cbs.cif.gz");
 
 	REQUIRE(f.is_valid());
 
@@ -216,7 +216,7 @@ TEST_CASE("dssp_1")
 
 TEST_CASE("dssp_2")
 {
-	cif::file f(gTestDir / "1cbs.cif.gz");
+	auto f = cif::pdb::read(gTestDir / "1cbs.cif.gz");
 
 	REQUIRE(f.is_valid());
 
@@ -253,7 +253,7 @@ TEST_CASE("dssp_2")
 
 TEST_CASE("dssp_3")
 {
-	cif::file f(gTestDir / "1cbs.cif.gz");
+	auto f = cif::pdb::read(gTestDir / "1cbs.cif.gz");
 
 	REQUIRE(f.is_valid());
 
