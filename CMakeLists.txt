@@ -25,7 +25,7 @@
 cmake_minimum_required(VERSION 3.23)
 
 # set the project name
-project(mkdssp VERSION 4.4.10 LANGUAGES CXX)
+project(mkdssp VERSION 4.5.0 LANGUAGES CXX)
 
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 
@@ -117,7 +117,7 @@ endif()
 if(NOT TARGET cifpp AND NOT cifpp_FOUND)
 	include(FetchContent)
 
-	find_package(cifpp 7.0.7 QUIET)
+	find_package(cifpp 8 QUIET)
 
 	if(NOT cifpp_FOUND)
 		set(CIFPP_DOWNLOAD_CCD OFF)
@@ -128,7 +128,7 @@ if(NOT TARGET cifpp AND NOT cifpp_FOUND)
 			cifpp
 			${EXLC}
 			GIT_REPOSITORY https://github.com/pdb-redo/libcifpp.git
-			GIT_TAG v7.0.7
+			GIT_TAG v8.0.0
 		)
 
 		FetchContent_MakeAvailable(cifpp)
