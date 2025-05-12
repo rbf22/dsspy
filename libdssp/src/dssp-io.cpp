@@ -755,7 +755,7 @@ void annotateDSSP(cif::datablock &db, const dssp &dssp, bool writeOther, bool wr
 	audit_conform.emplace({ //
 		{ "dict_name", "dssp-extension.dic" },
 		{ "dict_version", "1.1.1" },
-		{ "dict_location", "https://pdb-redo.eu/dssp/dssp-extensions.dic" } });
+		{ "dict_location", "https://pdb-redo.eu/dssp/dssp-extension.dic" } });
 
 	// Re-load the dictionary
 	db.load_dictionary();
