@@ -28,7 +28,7 @@ target_sources(dssp
 	FILES include/dssp.hpp
 )
 
-target_link_libraries(dssp PUBLIC cifpp::cifpp)
+target_link_libraries(dssp PRIVATE cifpp::cifpp)
 
 set_target_properties(dssp PROPERTIES POSITION_INDEPENDENT_CODE ON)
 target_compile_features(dssp PUBLIC cxx_std_17)

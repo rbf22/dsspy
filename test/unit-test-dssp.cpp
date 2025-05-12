@@ -153,7 +153,7 @@ TEST_CASE("ut_mmcif_2")
 
 	std::stringstream test;
 
-	dssp.annotate(f.front(), true, false);
+	dssp.annotate(f.front(), true, true);
 
 	cif::file rf(gTestDir / "1cbs-dssp.cif");
 
@@ -262,4 +262,17 @@ TEST_CASE("dssp_3")
 	dssp.annotate(f.front(), true, true);
 
 	// CHECK(f.is_valid());
+}
+
+// --------------------------------------------------------------------
+
+TEST_CASE("dssp_pdb")
+{
+	auto f = cif::pdb::read(gTestDir / "pdb1cbs.ent.gz");
+
+	REQUIRE(f.is_valid());
+
+	dssp dssp(f.front(), 1, 3, true);
+
+	dssp.annotate(f.front(), true, true);
 }

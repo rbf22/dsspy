@@ -25,13 +25,13 @@
 cmake_minimum_required(VERSION 3.23)
 
 # set the project name
-project(mkdssp VERSION 4.5.0 LANGUAGES CXX)
+project(mkdssp VERSION 4.5.1 LANGUAGES CXX)
 
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 
-include(CPM)
 include(CTest)
 include(VersionString)
+include(FetchContent)
 
 if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
 	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -Wno-unused-parameter -Wno-missing-field-initializers")
@@ -42,6 +42,7 @@ endif()
 # Optionally build a version to be installed inside CCP4
 option(BUILD_FOR_CCP4 "Build a version to be installed in CCP4" OFF)
 option(BUILD_DOCUMENTATION "Generate the documentation files using pandoc" OFF)
+option(INSTALL_LIBRARY "Install the libdssp library" OFF)
 
 if(BUILD_FOR_CCP4)
 	if("$ENV{CCP4}" STREQUAL "" OR NOT EXISTS $ENV{CCP4})
@@ -98,39 +99,54 @@ set(CMAKE_THREAD_PREFER_PTHREAD)
 set(THREADS_PREFER_PTHREAD_FLAG)
 find_package(Threads)
 
-CPMAddPackage(NAME mcfp GIT_REPOSITORY "https://github.com/mhekkel/libmcfp.git" GIT_TAG "v1.4.2")
-CPMAddPackage(NAME cifpp GIT_REPOSITORY "https://github.com/PDB-REDO/libcifpp.git" GIT_TAG "v8.0.0")
+if(CMAKE_VERSION GREATER_EQUAL 3.28)
+	set(EXLC "EXCLUDE_FROM_ALL")
+endif()
 
-set(CIFPP_SHARE_DIR ${cifpp_SOURCE_DIR}/rsrc)
+FetchContent_Declare(
+	mcfp
+	${EXLC}
+	GIT_REPOSITORY https://github.com/mhekkel/libmcfp
+	GIT_TAG v1.4.2)
 
-add_subdirectory(libdssp)
+FetchContent_MakeAvailable(mcfp)
+
+FetchContent_Declare(
+	cifpp
+	${EXLC}
+	GIT_REPOSITORY https://github.com/pdb-redo/libcifpp.git
+	GIT_TAG v8.0.1
+)
+
+FetchContent_MakeAvailable(cifpp)
+
+if(INSTALL_LIBRARY)
+	add_subdirectory(libdssp)
+else()
+	add_subdirectory(libdssp EXCLUDE_FROM_ALL)
+endif()
 
 add_executable(mkdssp ${CMAKE_CURRENT_SOURCE_DIR}/src/mkdssp.cpp)
 
-target_link_libraries(mkdssp PRIVATE mcfp::mcfp dssp::dssp)
+target_link_libraries(mkdssp PRIVATE mcfp::mcfp dssp::dssp cifpp::cifpp)
 
 if(USE_RSRC)
 	mrc_target_resources(mkdssp
 		${CIFPP_SHARE_DIR}/mmcif_pdbx.dic
 		${CIFPP_SHARE_DIR}/mmcif_ddl.dic
 		${CMAKE_CURRENT_SOURCE_DIR}/libdssp/mmcif_pdbx/dssp-extension.dic)
+else()
+	get_target_property(CIFPP_SOURCE_DIR cifpp SOURCE_DIR)
+	get_target_property(LIBDSSP_SOURCE_DIR dssp SOURCE_DIR)
+
+	install(FILES ${CIFPP_SOURCE_DIR}/rsrc/mmcif_pdbx.dic ${CMAKE_CURRENT_SOURCE_DIR}/libdssp/mmcif_pdbx/dssp-extension.dic
+		DESTINATION ${CIFPP_SHARE_DIR})
 endif()
 
 # Install rules
 install(TARGETS ${PROJECT_NAME}
 	RUNTIME DESTINATION bin
 )
-
-if(NOT USE_RSRC)
-	# When building cifpp ourselves, we need to find where libcifpp
-	# expects the data files to be located.
-
-	install(
-		FILES ${CIFPP_SHARE_DIR}/rsrc/mmcif_pdbx.dic
-		${CIFPP_SHARE_DIR}/rsrc/mmcif_ddl.dic
-		${CMAKE_CURRENT_SOURCE_DIR}/libdssp/mmcif_pdbx/dssp-extension.dic
-		DESTINATION ${DSSP_DATA_DIR})
-endif()
 
 if(BUILD_DOCUMENTATION)
 	add_subdirectory(doc)

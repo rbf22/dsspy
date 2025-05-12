@@ -11,7 +11,7 @@ _datablock.description
 
 _dictionary.title			dssp-extension.dic
 _dictionary.datablock_id	dssp-extension.dic
-_dictionary.version			1.1
+_dictionary.version			1.1.1
 
 loop_
 _dictionary_history.version
@@ -25,6 +25,11 @@ _dictionary_history.revision
 ;
 	Changes (mlh)
 	+ Added dictionary blocks
+;
+1.1.1 2025-05-12
+;
+	Changes (mlh)
+	+ Changed mandatory_code of accessible_surface_of_protein to no
 ;
 
 ########################################
@@ -1004,7 +1009,7 @@ save__dssp_statistics.accessible_surface_of_protein
 ;
 	_item.name               '_dssp_statistics.accessible_surface_of_protein'
 	_item.category_id        dssp_statistics
-	_item.mandatory_code     yes
+	_item.mandatory_code     no
 	_item_type.code          float
 	save_
 

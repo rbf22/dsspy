@@ -514,15 +514,19 @@ void writeStatistics(cif::datablock &db, const dssp &dssp)
 
 	auto &dssp_statistics = db["dssp_statistics"];
 
-	auto stats_i = dssp_statistics.emplace({ { "entry_id", db.name() },
+	std::optional<double> surface_accessibility;
+	if (stats.accessible_surface > 0)
+		surface_accessibility = stats.accessible_surface;
+
+	auto stats_i = dssp_statistics.emplace({ //
+		{ "entry_id", db.name() },
 		{ "nr_of_residues", stats.count.residues },
 		{ "nr_of_chains", stats.count.chains },
 		{ "nr_of_ss_bridges_total", stats.count.SS_bridges },
 		{ "nr_of_ss_bridges_intra_chain", stats.count.intra_chain_SS_bridges },
-		{ "nr_of_ss_bridges_inter_chain", stats.count.SS_bridges - stats.count.intra_chain_SS_bridges } });
-
-	if (stats.accessible_surface > 0)
-		(*stats_i)["accessible_surface_of_protein"] = stats.accessible_surface;
+		{ "nr_of_ss_bridges_inter_chain", stats.count.SS_bridges - stats.count.intra_chain_SS_bridges },
+		{ "accessible_surface_of_protein", surface_accessibility }
+	});
 
 	auto &dssp_struct_hbonds = db["dssp_statistics_hbond"];
 
@@ -735,15 +739,22 @@ void writeSummary(cif::datablock &db, const dssp &dssp)
 	}
 }
 
-void annotateDSSP(cif::datablock &db, const dssp &dssp, bool writeOther, bool writeExperimental)
+void annotateDSSP(cif::datablock &db, const dssp &dssp, bool writeOther, bool writeNewFormat)
 {
 	using namespace std::literals;
 
 	auto &audit_conform = db["audit_conform"];
+
+	if (audit_conform.empty())
+	{
+		auto &cf = cif::validator_factory::instance();
+		cf.get("mmcif_pdbx.dic").fill_audit_conform(audit_conform);
+	}
+
 	audit_conform.erase(cif::key("dict_name") == "dssp-extension.dic");
 	audit_conform.emplace({ //
 		{ "dict_name", "dssp-extension.dic" },
-		{ "dict_version", "1.1" },
+		{ "dict_version", "1.1.1" },
 		{ "dict_location", "https://pdb-redo.eu/dssp/dssp-extensions.dic" } });
 
 	// Re-load the dictionary
@@ -756,7 +767,7 @@ void annotateDSSP(cif::datablock &db, const dssp &dssp, bool writeOther, bool wr
 	}
 	else
 	{
-		if (writeExperimental)
+		if (writeNewFormat)
 		{
 			writeBridgePairs(db, dssp);
 			writeSheets(db, dssp);
