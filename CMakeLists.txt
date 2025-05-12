@@ -29,6 +29,7 @@ project(mkdssp VERSION 4.5.0 LANGUAGES CXX)
 
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 
+include(CPM)
 include(CTest)
 include(VersionString)
 
@@ -85,7 +86,7 @@ endif()
 write_version_header("${CMAKE_CURRENT_SOURCE_DIR}/src")
 
 # Optionally use mrc to create resources
-find_package(Mrc QUIET)
+find_package(mrc QUIET)
 
 if(MRC_FOUND)
 	option(USE_RSRC "Use mrc to create resources" ON)
@@ -96,46 +97,11 @@ endif()
 set(CMAKE_THREAD_PREFER_PTHREAD)
 set(THREADS_PREFER_PTHREAD_FLAG)
 find_package(Threads)
-find_package(mcfp 1.3.5 QUIET)
 
-if(NOT (mcfp_FOUND OR TARGET mcfp))
-	include(FetchContent)
+CPMAddPackage(NAME mcfp GIT_REPOSITORY "https://github.com/mhekkel/libmcfp.git" GIT_TAG "v1.4.2")
+CPMAddPackage(NAME cifpp GIT_REPOSITORY "https://github.com/PDB-REDO/libcifpp.git" GIT_TAG "v8.0.0")
 
-	if(CMAKE_VERSION GREATER_EQUAL 3.28)
-		set(EXLC "EXCLUDE_FROM_ALL")
-	endif()
-
-	FetchContent_Declare(
-		mcfp
-		${EXLC}
-		GIT_REPOSITORY https://github.com/mhekkel/libmcfp
-		GIT_TAG v1.3.5)
-
-	FetchContent_MakeAvailable(mcfp)
-endif()
-
-if(NOT TARGET cifpp AND NOT cifpp_FOUND)
-	include(FetchContent)
-
-	find_package(cifpp 8 QUIET)
-
-	if(NOT cifpp_FOUND)
-		set(CIFPP_DOWNLOAD_CCD OFF)
-		set(SAVED_BUILD_TESTING "${BUILD_TESTING}")
-		set(BUILD_TESTING OFF)
-
-		FetchContent_Declare(
-			cifpp
-			${EXLC}
-			GIT_REPOSITORY https://github.com/pdb-redo/libcifpp.git
-			GIT_TAG v8.0.0
-		)
-
-		FetchContent_MakeAvailable(cifpp)
-
-		set(BUILD_TESTING ${SAVED_BUILD_TESTING})
-	endif()
-endif()
+set(CIFPP_SHARE_DIR ${cifpp_SOURCE_DIR}/rsrc)
 
 add_subdirectory(libdssp)
 
@@ -158,18 +124,12 @@ install(TARGETS ${PROJECT_NAME}
 if(NOT USE_RSRC)
 	# When building cifpp ourselves, we need to find where libcifpp
 	# expects the data files to be located.
-	if(TARGET cifpp)
-		get_target_property(DSSP_DATA_DIR cifpp CIFPP_DATA_DIR)
-		get_target_property(CIFPP_SOURCE_DIR cifpp SOURCE_DIR)
 
-		install(
-			FILES ${CIFPP_SOURCE_DIR}/rsrc/mmcif_pdbx.dic
-			${CIFPP_SOURCE_DIR}/rsrc/mmcif_ddl.dic
-			${CMAKE_CURRENT_SOURCE_DIR}/libdssp/mmcif_pdbx/dssp-extension.dic
-			DESTINATION ${DSSP_DATA_DIR})
-	else()
-
-	endif()
+	install(
+		FILES ${CIFPP_SHARE_DIR}/rsrc/mmcif_pdbx.dic
+		${CIFPP_SHARE_DIR}/rsrc/mmcif_ddl.dic
+		${CMAKE_CURRENT_SOURCE_DIR}/libdssp/mmcif_pdbx/dssp-extension.dic
+		DESTINATION ${DSSP_DATA_DIR})
 endif()
 
 if(BUILD_DOCUMENTATION)

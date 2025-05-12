@@ -25,7 +25,7 @@
  */
 
 #if __has_include("config.hpp")
-#include "config.hpp"
+# include "config.hpp"
 #endif
 
 #include <exception>
@@ -33,8 +33,8 @@
 #include <fstream>
 #include <iostream>
 
-#include <mcfp/mcfp.hpp>
 #include <cif++.hpp>
+#include <mcfp/mcfp.hpp>
 
 #include "dssp.hpp"
 #include "revision.hpp"
@@ -116,14 +116,28 @@ int d_main(int argc, const char *argv[])
 	if (config.has("mmcif-dictionary"))
 		cif::add_file_resource("mmcif_pdbx.dic", config.get<std::string>("mmcif-dictionary"));
 
-	cif::gzio::ifstream in(config.operands().front());
-	if (not in.is_open())
-	{
-		std::cerr << "Could not open file" << std::endl;
-		exit(1);
-	}
+	cif::file f;
 
-	cif::file f = cif::pdb::read(in);
+	try
+	{
+		auto &cf = cif::validator_factory::instance();
+
+		cif::gzio::ifstream in(config.operands().front());
+		if (not in.is_open())
+		{
+			std::cerr << "Could not open file" << std::endl;
+			exit(1);
+		}
+
+		f.load(in);
+		f.front().set_validator(&cf.get("mmcif_pdbx.dic"));
+	}
+	catch (const std::exception &e)
+	{
+		std::cerr << e.what() << '\n';
+
+		f = cif::pdb::read(config.operands().front());
+	}
 
 	// --------------------------------------------------------------------
 
@@ -160,7 +174,7 @@ int d_main(int argc, const char *argv[])
 	{
 		// See if the data will fit at all
 		auto &db = f.front();
-		for (const auto &[chain_id, seq_nr] : db["pdbx_poly_seq_scheme"].rows<std::string,int>("pdb_strand_id", "pdb_seq_num"))
+		for (const auto &[chain_id, seq_nr] : db["pdbx_poly_seq_scheme"].rows<std::string, int>("pdb_strand_id", "pdb_seq_num"))
 		{
 			if (chain_id.length() > 1 or seq_nr > 99999)
 			{
