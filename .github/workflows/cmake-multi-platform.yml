@@ -34,12 +34,12 @@ jobs:
     - name: Install Catch2 Ubuntu
       if: matrix.os == 'ubuntu-latest'
       run: >
-        sudo apt-get update && sudo apt-get install catch2 libboost-all-dev
+        sudo apt-get update && sudo apt-get install catch2 libboost-all-dev libpython3-all-dev
 
     - name: Install Catch2 macOS
       if: matrix.os == 'macos-latest'
       run: >
-        brew install catch2 libboost-dev
+        brew install catch2 boost-python3
 
     - name: Install Boost Windows
       if: matrix.os == 'windows-latest'
