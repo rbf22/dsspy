@@ -79,6 +79,11 @@ if(WIN32)
 
 	# We do not want to write an export file for all our symbols...
 	set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS ON)
+
+	if(BUILD_PYTHON_MODULE)
+		message(WARNING "Python module is not working on Windows, yet, sorry")
+		set(BUILD_PYTHON_MODULE OFF)
+	endif()
 endif()
 
 if(MSVC)
