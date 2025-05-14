@@ -1,5 +1,5 @@
 #include <boost/python.hpp>
-#include <python3.11/Python.h>
+#include <Python.h>
 
 #include <dssp.hpp>
 
