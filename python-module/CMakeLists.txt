@@ -44,6 +44,7 @@ target_link_libraries(mkdssp_module dssp::dssp Boost::python ${Python_LIBRARIES}
 set_target_properties(mkdssp_module
 	PROPERTIES
 	PREFIX ""
+	SUFFIX ".so"
 	OUTPUT_NAME mkdssp
 	LINKER_LANGUAGE CXX
 	LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib
