@@ -1,4 +1,4 @@
-import mkdssp
+from mkdssp import dssp, helix_type, TestBond
 import os
 import gzip
 
@@ -7,7 +7,7 @@ file_path = os.path.join("..", "test", "1cbs.cif.gz")
 with gzip.open(file_path, "rt") as f:
 	file_content = f.read()
  
-dssp = mkdssp.dssp(file_content)
+dssp = dssp(file_content)
  
 print("residues: ", dssp.statistics.residues)
 print("chains: ", dssp.statistics.chains)
@@ -43,10 +43,10 @@ for res in dssp:
 	print("nr", res.nr)
 	print("type", res.type)
 	print("ssBridgeNr", res.ssBridgeNr)
-	print("helix(_3_10)", res.helix(mkdssp.helix_type._3_10))
-	print("helix(alpha)", res.helix(mkdssp.helix_type.alpha))
-	print("helix(pi)", res.helix(mkdssp.helix_type.pi))
-	print("helix(pp)", res.helix(mkdssp.helix_type.pp))
+	print("helix(_3_10)", res.helix(helix_type._3_10))
+	print("helix(alpha)", res.helix(helix_type.alpha))
+	print("helix(pi)", res.helix(helix_type.pi))
+	print("helix(pp)", res.helix(helix_type.pp))
 	print("is_alpha_helix_end_before_start", res.is_alpha_helix_end_before_start)
 	print("bend", res.bend)
 	print("sheet", res.sheet)
@@ -61,15 +61,16 @@ for res in dssp:
 		(ri, e) = res.acceptor(i)
 		if ri != None:
 			print("acceptor ", i, ri.asym_id, ri.seq_id, ri.compound_id, e)
-			print("test bond: ", mkdssp.TestBond(res, ri))
+			print("test bond: ", TestBond(res, ri))
    	
 	for i in range(0, 1):
 		(ri, e) = res.donor(i)
 		if ri != None:
 			print("donor ", i, ri.asym_id, ri.seq_id, ri.compound_id, e)
-			print("test bond: ", mkdssp.TestBond(res, ri))
+			print("test bond: ", TestBond(res, ri))
 
 	print("accessibility", res.accessibility)
+	break
 
 
 print("count: ", count)
@@ -79,4 +80,4 @@ b = dssp.get('A', 6)
 
 print ("a & b", a, b)
 
-assert(mkdssp.TestBond(a, b))
+assert(TestBond(a, b))

@@ -23,7 +23,7 @@
 # SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 find_package(Python REQUIRED COMPONENTS Interpreter Development)
-find_package(Boost REQUIRED COMPONENTS python)
+find_package(Boost 1.83 REQUIRED COMPONENTS python)
 
 # ---------
 

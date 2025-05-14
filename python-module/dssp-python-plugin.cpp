@@ -263,7 +263,7 @@ BOOST_PYTHON_MODULE(mkdssp)
 		.value("pp", dssp::helix_type::pp);
 
 	enum_<dssp::helix_position_type>("helix_position_type")
-		.value("None", dssp::helix_position_type::None)
+		.value("NoHelix", dssp::helix_position_type::None)
 		.value("Start", dssp::helix_position_type::Start)
 		.value("End", dssp::helix_position_type::End)
 		.value("StartAndEnd", dssp::helix_position_type::StartAndEnd)
@@ -274,7 +274,7 @@ BOOST_PYTHON_MODULE(mkdssp)
 		.value("anti_parallel", ladder_direction_type::antiparallel);
 
 	enum_<dssp::chain_break_type>("chain_break_type")
-		.value("None", dssp::chain_break_type::None)
+		.value("NoGap", dssp::chain_break_type::None)
 		.value("NewChain", dssp::chain_break_type::NewChain)
 		.value("Gap", dssp::chain_break_type::Gap);
 
@@ -313,20 +313,20 @@ BOOST_PYTHON_MODULE(mkdssp)
 		.add_property("nr", &dssp::residue_info::nr)
 		.add_property("type", &dssp::residue_info::type)
 		.add_property("ssBridgeNr", &dssp::residue_info::ssBridgeNr)
-		.def("helix", &dssp::residue_info::helix)
+		.def("helix", &dssp::residue_info::helix, args("helix_type"), "Return the position of this residue in a helix with type helix_type")
 		.add_property("is_alpha_helix_end_before_start", &dssp::residue_info::is_alpha_helix_end_before_start)
 		.add_property("bend", &dssp::residue_info::bend)
 		.add_property("accessibility", &dssp::residue_info::accessibility)
-		.def("bridge_partner", &dssp::residue_info::bridge_partner)
+		.def("bridge_partner", &dssp::residue_info::bridge_partner, args("indexnr"), "Return a tuple containing the residue, number and direction for the bridge partner with index indexnr")
 		.add_property("sheet", &dssp::residue_info::sheet)
 		.add_property("strand", &dssp::residue_info::strand)
-		.def("acceptor", &dssp::residue_info::acceptor)
-		.def("donor", &dssp::residue_info::donor);
+		.def("acceptor", &dssp::residue_info::acceptor, args("indexnr"), "Return a tuple containing the residue and bond energy for the acceptor with index indexnr")
+		.def("donor", &dssp::residue_info::donor, args("indexnr"), "Return a tuple containing the residue and bond energy for the donor with index indexnr");
 
 	class_<dssp_wrapper, boost::noncopyable>("dssp", init<std::string, optional<int, int, bool>>())
 		.add_property("statistics", &dssp_wrapper::get_statistics)
 		.def("__iter__", iterator<dssp_wrapper>())
-		.def("get", &dssp_wrapper::get);
+		.def("get", &dssp_wrapper::get, args("asym_id", "seq_id"), "Return the residue info object for the residue with specified asym_id and seq_id");
 
-	def("TestBond", test_bond_between_residues);
+	def("TestBond", test_bond_between_residues, args("a", "b"), "Returns true if residues a and b are bonded according to DSSP");
 }
