@@ -15,6 +15,7 @@ jobs:
 
       matrix:
         os: [ubuntu-latest, windows-latest, macos-latest]
+        python-version: [ 3.11 ]
         include:
           - os: windows-latest
             cpp_compiler: cl
@@ -35,6 +36,11 @@ jobs:
       if: matrix.os == 'ubuntu-latest'
       run: >
         sudo apt-get update && sudo apt-get install catch2 libboost-all-dev libpython3-all-dev
+
+    - name: setup python
+      uses: actions/setup-python@v5
+      with:
+        python-version: ${{ matrix.python-version }}
 
     - name: Install Catch2 macOS
       if: matrix.os == 'macos-latest'
