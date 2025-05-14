@@ -59,9 +59,39 @@ if(BUILD_FOR_CCP4)
 	endif()
 endif()
 
+if(WIN32)
+	if(${CMAKE_SYSTEM_VERSION} GREATER_EQUAL 10) # Windows 10
+		add_definitions(-D _WIN32_WINNT=0x0A00)
+	elseif(${CMAKE_SYSTEM_VERSION} EQUAL 6.3) # Windows 8.1
+		add_definitions(-D _WIN32_WINNT=0x0603)
+	elseif(${CMAKE_SYSTEM_VERSION} EQUAL 6.2) # Windows 8
+		add_definitions(-D _WIN32_WINNT=0x0602)
+	elseif(${CMAKE_SYSTEM_VERSION} EQUAL 6.1) # Windows 7
+		add_definitions(-D _WIN32_WINNT=0x0601)
+	elseif(${CMAKE_SYSTEM_VERSION} EQUAL 6.0) # Windows Vista
+		add_definitions(-D _WIN32_WINNT=0x0600)
+	else() # Windows XP (5.1)
+		add_definitions(-D _WIN32_WINNT=0x0501)
+	endif()
+
+	# Man, this is 2024 we're living in...
+	add_definitions(-DNOMINMAX)
+
+	# We do not want to write an export file for all our symbols...
+	set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS ON)
+endif()
+
 if(MSVC)
 	# make msvc standards compliant...
-	add_compile_options(/permissive-)
+	add_compile_options(/permissive- /bigobj)
+	add_link_options(/NODEFAULTLIB:library)
+
+	# This is dubious...
+	if(BUILD_SHARED_LIBS)
+		set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>DLL")
+	else()
+		set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
+	endif()
 endif()
 
 # Create a revision file, containing the current git version info
