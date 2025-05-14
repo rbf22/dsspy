@@ -104,22 +104,27 @@ if(CMAKE_VERSION GREATER_EQUAL 3.28)
 	set(EXLC "EXCLUDE_FROM_ALL")
 endif()
 
-FetchContent_Declare(
-	mcfp
-	${EXLC}
-	GIT_REPOSITORY https://github.com/mhekkel/libmcfp
-	GIT_TAG v1.4.2)
+find_package(mcfp 1.4.2 QUIET)
 
-FetchContent_MakeAvailable(mcfp)
+if(NOT mcfp_FOUND)
+	FetchContent_Declare(
+		mcfp
+		${EXLC}
+		GIT_REPOSITORY https://github.com/mhekkel/libmcfp
+		GIT_TAG v1.4.2)
+	FetchContent_MakeAvailable(mcfp)
+endif()
 
-FetchContent_Declare(
-	cifpp
-	${EXLC}
-	GIT_REPOSITORY https://github.com/pdb-redo/libcifpp.git
-	GIT_TAG v8.0.1
-)
+find_package(cifpp 8.0.1 QUIET)
 
-FetchContent_MakeAvailable(cifpp)
+if(NOT cifpp_FOUND)
+	FetchContent_Declare(
+		cifpp
+		${EXLC}
+		GIT_REPOSITORY https://github.com/pdb-redo/libcifpp.git
+		GIT_TAG v8.0.1)
+	FetchContent_MakeAvailable(cifpp)
+endif()
 
 if(INSTALL_LIBRARY)
 	add_subdirectory(libdssp)
