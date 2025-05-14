@@ -77,7 +77,7 @@ jobs:
 
     - name: Test
       working-directory: ${{ steps.strings.outputs.build-output-dir }}
-      run: ctest --build-config Release --output-on-failure -R dssp
+      run: ctest --build-config Release --output-on-failure
       env:
         LIBCIFPP_DATA_DIR: ${{ steps.strings.outputs.build-output-dir }}/_deps/cifpp-src/rsrc
 
