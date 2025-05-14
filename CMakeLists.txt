@@ -42,6 +42,7 @@ endif()
 # Optionally build a version to be installed inside CCP4
 option(BUILD_FOR_CCP4 "Build a version to be installed in CCP4" OFF)
 option(BUILD_DOCUMENTATION "Generate the documentation files using pandoc" OFF)
+option(BUILD_PYTHON_MODULE "Build an experimental Python module" OFF)
 option(INSTALL_LIBRARY "Install the libdssp library" OFF)
 
 if(BUILD_FOR_CCP4)
@@ -165,6 +166,11 @@ endif()
 # test
 if(BUILD_TESTING)
 	add_subdirectory(test)
+endif()
+
+# Python
+if(BUILD_PYTHON_MODULE)
+	add_subdirectory(python-module)
 endif()
 
 include(InstallRequiredSystemLibraries)

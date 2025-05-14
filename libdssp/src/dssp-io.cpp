@@ -98,12 +98,12 @@ std::string ResidueToDSSPLine(const dssp::residue_info &info)
 	char bridgelabel[2] = { ' ', ' ' };
 	for (uint32_t i : { 0, 1 })
 	{
-		const auto &[p, ladder, parallel] = info.bridge_partner(i);
+		const auto &[p, ladder, direction] = info.bridge_partner(i);
 		if (not p)
 			continue;
 
 		bp[i] = p.nr() % 10000; // won't fit otherwise...
-		bridgelabel[i] = (parallel ? 'a' : 'A') + ladder % 26;
+		bridgelabel[i] = (direction == dssp::ladder_direction_type::parallel ? 'a' : 'A') + ladder % 26;
 	}
 
 	char sheet = ' ';
@@ -402,10 +402,10 @@ void writeLadders(cif::datablock &db, const dssp &dssp)
 	// Write out the DSSP ladders
 	struct ladder_info
 	{
-		ladder_info(int label, int sheet, bool parallel, const dssp::residue_info &a, const dssp::residue_info &b)
+		ladder_info(int label, int sheet, dssp::ladder_direction_type direction, const dssp::residue_info &a, const dssp::residue_info &b)
 			: ladder(label)
 			, sheet(sheet)
-			, parallel(parallel)
+			, direction(direction)
 			, pairs({ { a, b } })
 		{
 		}
@@ -417,7 +417,7 @@ void writeLadders(cif::datablock &db, const dssp &dssp)
 
 		int ladder;
 		int sheet;
-		bool parallel;
+		dssp::ladder_direction_type direction;
 		std::vector<std::pair<dssp::residue_info, dssp::residue_info>> pairs;
 	};
 
@@ -427,7 +427,7 @@ void writeLadders(cif::datablock &db, const dssp &dssp)
 	{
 		for (int i : { 0, 1 })
 		{
-			const auto &[p, ladder, parallel] = res.bridge_partner(i);
+			const auto &[p, ladder, direction] = res.bridge_partner(i);
 
 			if (not p)
 				continue;
@@ -438,7 +438,7 @@ void writeLadders(cif::datablock &db, const dssp &dssp)
 				if (l.ladder != ladder)
 					continue;
 
-				assert(l.parallel == parallel);
+				assert(l.direction == direction);
 
 				if (find_if(l.pairs.begin(), l.pairs.end(), [na = p.nr(), nb = res.nr()](const auto &p)
 						{ return p.first.nr() == na and p.second.nr() == nb; }) != l.pairs.end())
@@ -455,7 +455,7 @@ void writeLadders(cif::datablock &db, const dssp &dssp)
 			if (not is_new)
 				continue;
 
-			ladders.emplace_back(ladder, res.sheet() - 1, parallel, res, p);
+			ladders.emplace_back(ladder, res.sheet() - 1, direction, res, p);
 		}
 	}
 
@@ -472,7 +472,7 @@ void writeLadders(cif::datablock &db, const dssp &dssp)
 			{ "sheet_id", cif::cif_id_for_number(l.sheet) },
 			{ "range_id_1", cif::cif_id_for_number(beg1.strand() - 1) },
 			{ "range_id_2", cif::cif_id_for_number(beg2.strand() - 1) },
-			{ "type", l.parallel ? "parallel" : "anti-parallel" },
+			{ "type", l.direction == dssp::ladder_direction_type::parallel ? "parallel" : "anti-parallel" },
 
 			{ "beg_1_label_comp_id", beg1.compound_id() },
 			{ "beg_1_label_asym_id", beg1.asym_id() },

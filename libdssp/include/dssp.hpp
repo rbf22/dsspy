@@ -68,6 +68,12 @@ class dssp
 		Middle
 	};
 
+	enum class ladder_direction_type
+	{
+		parallel,
+		antiparallel
+	};
+
 	static constexpr size_t kHistogramSize = 30;
 
 	struct statistics
@@ -146,8 +152,17 @@ class dssp
 		bool is_cis() const { return std::abs(omega().value_or(360)) < 30.0f; }
 
 		float chiral_volume() const;
+
 		std::size_t nr_of_chis() const;
 		float chi(std::size_t index) const;
+
+		std::vector<float> chi() const
+		{
+			std::vector<float> result;
+			for (size_t i = 0; i < nr_of_chis(); ++i)
+				result.push_back(chi(i));
+			return result;
+		}
 
 		std::tuple<float, float, float> ca_location() const;
 
@@ -169,7 +184,7 @@ class dssp
 		double accessibility() const;
 
 		/// \brief returns resinfo, ladder and parallel
-		std::tuple<residue_info, int, bool> bridge_partner(int i) const;
+		std::tuple<residue_info, int, ladder_direction_type> bridge_partner(int i) const;
 
 		int sheet() const;
 		int strand() const;
@@ -186,6 +201,8 @@ class dssp
 
 		/// \brief Returns \result true if there is a bond between two residues
 		friend bool test_bond(residue_info const &a, residue_info const &b);
+
+		residue_info next() const;
 
 	  private:
 		residue_info(residue *res)
@@ -250,7 +267,7 @@ class dssp
 	// --------------------------------------------------------------------
 	// Writing out the data, either in legacy format...
 
-	void write_legacy_output(std::ostream& os) const;
+	void write_legacy_output(std::ostream &os) const;
 
 	// ... or as annotation in the cif::datablock
 	void annotate(cif::datablock &db, bool writeOther, bool writeDSSPCategories) const;
@@ -270,4 +287,3 @@ class dssp
   private:
 	struct DSSP_impl *m_impl;
 };
-

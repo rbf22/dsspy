@@ -5,3 +5,4 @@ build/
 **/*.dssp
 src/revision.hpp
 libdssp/src/revision.hpp
+python-module/mkdssp.so
