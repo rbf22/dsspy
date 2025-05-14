@@ -149,6 +149,14 @@ class dssp
 		std::size_t nr_of_chis() const;
 		float chi(std::size_t index) const;
 
+		std::vector<float> chis() const
+		{
+			std::vector<float> result;
+			for (size_t i = 0; i < nr_of_chis(); ++i)
+				result.push_back(chi(i));
+			return result;
+		}
+
 		std::tuple<float, float, float> ca_location() const;
 
 		chain_break_type chain_break() const;
@@ -186,6 +194,8 @@ class dssp
 
 		/// \brief Returns \result true if there is a bond between two residues
 		friend bool test_bond(residue_info const &a, residue_info const &b);
+
+		residue_info next() const;
 
 	  private:
 		residue_info(residue *res)
@@ -250,7 +260,7 @@ class dssp
 	// --------------------------------------------------------------------
 	// Writing out the data, either in legacy format...
 
-	void write_legacy_output(std::ostream& os) const;
+	void write_legacy_output(std::ostream &os) const;
 
 	// ... or as annotation in the cif::datablock
 	void annotate(cif::datablock &db, bool writeOther, bool writeDSSPCategories) const;
@@ -270,4 +280,3 @@ class dssp
   private:
 	struct DSSP_impl *m_impl;
 };
-

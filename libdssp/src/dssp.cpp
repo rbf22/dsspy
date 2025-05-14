@@ -36,7 +36,7 @@
 #include <thread>
 
 #ifdef near
-#undef near
+# undef near
 #endif
 
 using residue = dssp::residue;
@@ -552,7 +552,7 @@ struct dssp::residue
 	HBond mHBondDonor[2] = {}, mHBondAcceptor[2] = {};
 	bridge_partner mBetaPartner[2] = {};
 	uint32_t mSheet = 0;
-	uint32_t mStrand = 0;	// Added to ease the writing of mmCIF's struct_sheet and friends
+	uint32_t mStrand = 0;                                                                                                                                // Added to ease the writing of mmCIF's struct_sheet and friends
 	helix_position_type mHelixFlags[4] = { helix_position_type::None, helix_position_type::None, helix_position_type::None, helix_position_type::None }; //
 	bool mBend = false;
 	chain_break_type mChainBreak = chain_break_type::None;
@@ -789,7 +789,7 @@ void CalculateHBondEnergies(std::vector<residue> &inResidues, std::vector<std::t
 		CalculateHBondEnergy(ri, rj);
 		if (j != i + 1)
 			CalculateHBondEnergy(rj, ri);
-		
+
 		if (progress)
 			progress->consumed(1);
 	}
@@ -1116,10 +1116,10 @@ void CalculateBetaSheets(std::vector<residue> &inResidues, statistics &stats, st
 		{
 			if (res.mSheet != iSheet)
 				continue;
-			
+
 			if (lastNr + 1 < res.mNumber)
 				++strand;
-			
+
 			res.mStrand = strand;
 			lastNr = res.mNumber;
 		}
@@ -1425,17 +1425,16 @@ DSSP_impl::DSSP_impl(const cif::datablock &db, int model_nr, int min_poly_prolin
 	auto &pdbx_poly_seq_scheme = mDB["pdbx_poly_seq_scheme"];
 	auto &atom_site = mDB["atom_site"];
 
-	using key_type = std::tuple<std::string,int>;
+	using key_type = std::tuple<std::string, int>;
 	using index_type = std::map<key_type, size_t>;
 
 	index_type index;
 
 	mResidues.reserve(pdbx_poly_seq_scheme.size());
 
-	for (const auto &[asym_id, seq_id, pdb_strand_id, pdb_seq_num, pdb_ins_code]
-		: pdbx_poly_seq_scheme.rows<std::string,int, std::string, int, std::string>("asym_id", "seq_id", "pdb_strand_id", "pdb_seq_num", "pdb_ins_code"))
+	for (const auto &[asym_id, seq_id, pdb_strand_id, pdb_seq_num, pdb_ins_code] : pdbx_poly_seq_scheme.rows<std::string, int, std::string, int, std::string>("asym_id", "seq_id", "pdb_strand_id", "pdb_seq_num", "pdb_ins_code"))
 	{
-		index[{asym_id, seq_id}] = mResidues.size();
+		index[{ asym_id, seq_id }] = mResidues.size();
 		mResidues.emplace_back(model_nr, pdb_strand_id, pdb_seq_num, pdb_ins_code);
 	}
 
@@ -1445,17 +1444,19 @@ DSSP_impl::DSSP_impl(const cif::datablock &db, int model_nr, int min_poly_prolin
 		int seq_id;
 
 		cif::tie(asym_id, seq_id) = atom.get("label_asym_id", "label_seq_id");
-		auto i = index.find({asym_id, seq_id});
+		auto i = index.find({ asym_id, seq_id });
 		if (i == index.end())
 			continue;
-		
+
 		mResidues[i->second].addAtom(atom);
 	}
 
 	for (auto &residue : mResidues)
 		residue.finish();
-	
-	mResidues.erase(std::remove_if(mResidues.begin(), mResidues.end(), [](const dssp::residue &r) { return not r.mComplete; }), mResidues.end());
+
+	mResidues.erase(std::remove_if(mResidues.begin(), mResidues.end(), [](const dssp::residue &r)
+						{ return not r.mComplete; }),
+		mResidues.end());
 	mStats.count.chains = 1;
 
 	chain_break_type brk = chain_break_type::NewChain;
@@ -1595,7 +1596,7 @@ void DSSP_impl::calculateSecondaryStructure()
 		progress.reset(new cif::progress_bar((mResidues.size() * (mResidues.size() - 1)) / 2, "calculate distances"));
 
 	// Calculate the HBond energies
-	std::vector<std::tuple<uint32_t,uint32_t>> near;
+	std::vector<std::tuple<uint32_t, uint32_t>> near;
 
 	for (uint32_t i = 0; i + 1 < mResidues.size(); ++i)
 	{
@@ -2183,6 +2184,11 @@ std::tuple<dssp::residue_info, double> dssp::residue_info::donor(int i) const
 	return { residue_info(d.res), d.energy };
 }
 
+dssp::residue_info dssp::residue_info::next() const
+{
+	return residue_info(m_impl ? m_impl->mNext : nullptr);
+}
+
 // --------------------------------------------------------------------
 
 dssp::iterator::iterator(residue *res)
@@ -2248,11 +2254,12 @@ dssp::iterator dssp::end() const
 dssp::residue_info dssp::operator[](const key_type &key) const
 {
 	auto i = std::find_if(begin(), end(),
-		[key](const residue_info &res) { return res.asym_id() == std::get<0>(key) and res.seq_id() == std::get<1>(key); });
-	
+		[key](const residue_info &res)
+		{ return res.asym_id() == std::get<0>(key) and res.seq_id() == std::get<1>(key); });
+
 	if (i == end())
 		throw std::out_of_range("Could not find residue with supplied key");
-	
+
 	return *i;
 }
 
@@ -2280,7 +2287,7 @@ std::string dssp::get_pdb_header_line(pdb_record_type pdb_record) const
 
 // --------------------------------------------------------------------
 
-void dssp::write_legacy_output(std::ostream& os) const
+void dssp::write_legacy_output(std::ostream &os) const
 {
 	writeDSSP(*this, os);
 }
@@ -2289,5 +2296,3 @@ void dssp::annotate(cif::datablock &db, bool writeOther, bool writeDSSPCategorie
 {
 	annotateDSSP(db, *this, writeOther, writeDSSPCategories);
 }
-
-
