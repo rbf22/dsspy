@@ -62,26 +62,6 @@ endif()
 if(MSVC)
 	# make msvc standards compliant...
 	add_compile_options(/permissive-)
-	add_link_options(/NODEFAULTLIB:library)
-
-	macro(get_WIN32_WINNT version)
-		if(WIN32 AND CMAKE_SYSTEM_VERSION)
-			set(ver ${CMAKE_SYSTEM_VERSION})
-			string(REPLACE "." "" ver ${ver})
-			string(REGEX REPLACE "([0-9])" "0\\1" ver ${ver})
-
-			set(${version} "0x${ver}")
-		endif()
-	endmacro()
-
-	get_WIN32_WINNT(ver)
-	add_definitions(-D_WIN32_WINNT=${ver})
-
-	if(BUILD_SHARED_LIBS)
-		set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>DLL")
-	else()
-		set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
-	endif()
 endif()
 
 # Create a revision file, containing the current git version info
@@ -124,6 +104,10 @@ if(NOT cifpp_FOUND)
 		GIT_REPOSITORY https://github.com/pdb-redo/libcifpp.git
 		GIT_TAG v8.0.1)
 	FetchContent_MakeAvailable(cifpp)
+	get_target_property(CIFPP_SOURCE_DIR cifpp SOURCE_DIR)
+	set(CIFPP_DATA_DIR ${CIFPP_SOURCE_DIR})
+else()
+	set(CIFPP_DATA_DIR ${CIFPP_SHARE_DIR})
 endif()
 
 if(INSTALL_LIBRARY)
@@ -142,10 +126,11 @@ if(USE_RSRC)
 		${CIFPP_SHARE_DIR}/mmcif_ddl.dic
 		${CMAKE_CURRENT_SOURCE_DIR}/libdssp/mmcif_pdbx/dssp-extension.dic)
 else()
-	get_target_property(CIFPP_SOURCE_DIR cifpp SOURCE_DIR)
 	get_target_property(LIBDSSP_SOURCE_DIR dssp SOURCE_DIR)
 
-	install(FILES ${CIFPP_SOURCE_DIR}/rsrc/mmcif_pdbx.dic ${CMAKE_CURRENT_SOURCE_DIR}/libdssp/mmcif_pdbx/dssp-extension.dic
+	install(FILES
+		${CIFPP_DATA_DIR}/mmcif_pdbx.dic
+		${CMAKE_CURRENT_SOURCE_DIR}/libdssp/mmcif_pdbx/dssp-extension.dic
 		DESTINATION ${CIFPP_SHARE_DIR})
 endif()
 

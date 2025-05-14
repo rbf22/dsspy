@@ -26,7 +26,6 @@ find_package(Python REQUIRED COMPONENTS Interpreter Development)
 find_package(Boost 1.83 REQUIRED COMPONENTS python)
 
 # ---------
-
 add_library(mkdssp_module SHARED dssp-python-plugin.cpp)
 
 target_compile_features(mkdssp_module PUBLIC cxx_std_20)
@@ -43,4 +42,8 @@ set_target_properties(mkdssp_module
 	RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin
 )
 
-install(TARGETS mkdssp_module LIBRARY DESTINATION "${Python_SITELIB}")
+if(MSVC)
+	install(TARGETS mkdssp_module RUNTIME DESTINATION "${Python_SITELIB}")
+else()
+	install(TARGETS mkdssp_module LIBRARY DESTINATION "${Python_SITELIB}")
+endif()
