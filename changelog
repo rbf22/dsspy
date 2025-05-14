@@ -1,4 +1,8 @@
 Version 4.5.1
+- Use find_package before fetching libraries, again
+- Added Python module
+
+Version 4.5.1
 - Only use reconstructing load option when needed to
   save lots of time on large structures
 - Fixes in writing the audit_conform category
