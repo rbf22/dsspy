@@ -2063,13 +2063,21 @@ const std::map<residue_type, std::vector<std::string>> kChiAtomsMap = {
 	{ MapResidue("VAL"), { "CG1" } }
 };
 
-std::vector<float> dssp::residue_info::chi() const
+std::size_t dssp::residue_info::nr_of_chis() const
 {
-	std::vector<float> result;
+	auto i = kChiAtomsMap.find(m_impl->mType);
+
+	return i != kChiAtomsMap.end() ? i->second.size() : 0;
+}
+
+float dssp::residue_info::chi(std::size_t index) const
+{
+	float result = 0;
 
 	auto type = m_impl->mType;
 
-	if (auto i = kChiAtomsMap.find(type); i != kChiAtomsMap.end())
+	auto i = kChiAtomsMap.find(type);
+	if (i != kChiAtomsMap.end() and index < i->second.size())
 	{
 		std::vector<std::string> atoms{ "N", "CA", "CB" };
 
@@ -2084,14 +2092,11 @@ std::vector<float> dssp::residue_info::chi() const
 				atoms.back() = "CG2";
 		}
 
-		for (size_t ix = 0; ix < i->second.size(); ++ix)
-		{
-			result.push_back(static_cast<float>(dihedral_angle(
-				m_impl->get_atom(atoms[ix + 0]),
-				m_impl->get_atom(atoms[ix + 1]),
-				m_impl->get_atom(atoms[ix + 2]),
-				m_impl->get_atom(atoms[ix + 3]))));
-		}
+		result = static_cast<float>(dihedral_angle(
+			m_impl->get_atom(atoms[index + 0]),
+			m_impl->get_atom(atoms[index + 1]),
+			m_impl->get_atom(atoms[index + 2]),
+			m_impl->get_atom(atoms[index + 3])));
 	}
 
 	return result;
@@ -2147,13 +2152,13 @@ double dssp::residue_info::accessibility() const
 	return m_impl->mAccessibility;
 }
 
-std::tuple<dssp::residue_info, int, dssp::ladder_direction_type> dssp::residue_info::bridge_partner(int i) const
+std::tuple<dssp::residue_info, int, bool> dssp::residue_info::bridge_partner(int i) const
 {
 	auto bp = m_impl->GetBetaPartner(i);
 
 	residue_info ri(bp.m_residue);
 
-	return std::make_tuple(std::move(ri), bp.ladder, bp.parallel ? ladder_direction_type::parallel : ladder_direction_type::antiparallel);
+	return std::make_tuple(std::move(ri), bp.ladder, bp.parallel);
 }
 
 int dssp::residue_info::sheet() const

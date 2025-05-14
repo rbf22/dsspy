@@ -16,6 +16,12 @@ struct statistics_wrapper
 	dssp::statistics m_stats;
 };
 
+enum class ladder_direction_type
+{
+	parallel,
+	antiparallel
+};
+
 struct residue_info_wrapper
 {
 };
@@ -193,19 +199,21 @@ struct to_python_partner
 
 struct to_python_bridge_partner
 {
-	static PyObject *convert(const std::tuple<dssp::residue_info, int, dssp::ladder_direction_type> &v)
+	static PyObject *convert(const std::tuple<dssp::residue_info, int, bool> &v)
 	{
-		if (auto &[ri, nr, direction] = v; ri)
+		if (auto &[ri, nr, parallel] = v; ri)
 		{
 			boost::python::type_info iv = boost::python::type_id<dssp::residue_info>();
 			const boost::python::converter::registration* cv = boost::python::converter::registry::query(iv);
 			assert(cv != nullptr);
 	
-			boost::python::type_info dv = boost::python::type_id<dssp::ladder_direction_type>();
+			boost::python::type_info dv = boost::python::type_id<ladder_direction_type>();
 			const boost::python::converter::registration* ev = boost::python::converter::registry::query(dv);
 			assert(ev != nullptr);
 
 			auto c = cv->to_python(&ri);
+
+			ladder_direction_type direction = parallel ? ladder_direction_type::parallel : ladder_direction_type::antiparallel;
 			auto e = ev->to_python(&direction);
 
 			return boost::python::incref(boost::python::make_tuple(
@@ -235,7 +243,7 @@ BOOST_PYTHON_MODULE(mkdssp)
 	to_python_converter<std::vector<float>, to_python_list_of_floats>();
 	to_python_converter<std::tuple<float, float, float>, to_python_point>();
 	to_python_converter<std::tuple<dssp::residue_info, double>, to_python_partner>();
-	to_python_converter<std::tuple<dssp::residue_info, int, dssp::ladder_direction_type>, to_python_bridge_partner>();
+	to_python_converter<std::tuple<dssp::residue_info, int, bool>, to_python_bridge_partner>();
 
 	enum_<dssp::structure_type>("structure_type")
 		.value("Loop", dssp::structure_type::Loop)
@@ -261,9 +269,9 @@ BOOST_PYTHON_MODULE(mkdssp)
 		.value("StartAndEnd", dssp::helix_position_type::StartAndEnd)
 		.value("Middle", dssp::helix_position_type::Middle);
 
-	enum_<dssp::ladder_direction_type>("ladder_direction_type")
-		.value("parallel", dssp::ladder_direction_type::parallel)
-		.value("anti_parallel", dssp::ladder_direction_type::antiparallel);
+	enum_<ladder_direction_type>("ladder_direction_type")
+		.value("parallel", ladder_direction_type::parallel)
+		.value("anti_parallel", ladder_direction_type::antiparallel);
 
 	enum_<dssp::chain_break_type>("chain_break_type")
 		.value("None", dssp::chain_break_type::None)
@@ -299,7 +307,7 @@ BOOST_PYTHON_MODULE(mkdssp)
 		.add_property("is_pre_pro", &dssp::residue_info::is_pre_pro)
 		.add_property("is_cis", &dssp::residue_info::is_cis)
 		.add_property("chiral_volume", &dssp::residue_info::chiral_volume)
-		.add_property("chi", &dssp::residue_info::chi)
+		.add_property("chi", &dssp::residue_info::chis)
 		.add_property("ca_location", &dssp::residue_info::ca_location)
 		.add_property("chain_break", &dssp::residue_info::chain_break)
 		.add_property("nr", &dssp::residue_info::nr)

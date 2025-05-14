@@ -68,12 +68,6 @@ class dssp
 		Middle
 	};
 
-	enum class ladder_direction_type
-	{
-		parallel,
-		antiparallel
-	};
-
 	static constexpr size_t kHistogramSize = 30;
 
 	struct statistics
@@ -156,7 +150,7 @@ class dssp
 		std::size_t nr_of_chis() const;
 		float chi(std::size_t index) const;
 
-		std::vector<float> chi() const
+		std::vector<float> chis() const
 		{
 			std::vector<float> result;
 			for (size_t i = 0; i < nr_of_chis(); ++i)
@@ -184,7 +178,7 @@ class dssp
 		double accessibility() const;
 
 		/// \brief returns resinfo, ladder and parallel
-		std::tuple<residue_info, int, ladder_direction_type> bridge_partner(int i) const;
+		std::tuple<residue_info, int, bool> bridge_partner(int i) const;
 
 		int sheet() const;
 		int strand() const;
