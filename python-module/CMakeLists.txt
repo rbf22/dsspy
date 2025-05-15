@@ -62,15 +62,15 @@ set_target_properties(mkdssp_module
 	OUTPUT_NAME mkdssp
 	LINKER_LANGUAGE CXX
 	LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib
-	RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin
 )
 
 if(WIN32)
 	# python modules use this on Windows
 	set_target_properties(
-		mathutils_module
+		mkdssp_module
 		PROPERTIES
 		SUFFIX ".pyd"
+		RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin
 	)
 
 	install(TARGETS mkdssp_module RUNTIME DESTINATION "${Python_SITELIB}")
