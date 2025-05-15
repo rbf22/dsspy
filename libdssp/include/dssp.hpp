@@ -146,6 +146,7 @@ class dssp
 		bool is_cis() const { return std::abs(omega().value_or(360)) < 30.0f; }
 
 		float chiral_volume() const;
+
 		std::size_t nr_of_chis() const;
 		float chi(std::size_t index) const;
 

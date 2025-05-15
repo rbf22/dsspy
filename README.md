@@ -40,6 +40,42 @@ cmake --build build
 cmake --install build
 ```
 
+Python module
+-------------
+
+Since version 4.5.2 it is possible to build a Python module to directy work
+with DSSP info inside your Python scripts. To build and install the Python
+module use the following commands instead:
+
+```console
+git clone https://github.com/PDB-REDO/dssp.git
+cd dssp
+cmake -S . -B build -DBUILD_PYTHON_MODULE=ON
+cmake --build build
+sudo cmake --install build
+```
+
+After that you can use dssp in a python script, like this:
+
+```python
+from mkdssp import dssp
+import os
+import gzip
+
+file_path = os.path.join("..", "test", "1cbs.cif.gz")
+
+with gzip.open(file_path, "rt") as f:
+    file_content = f.read()
+ 
+dssp = dssp(file_content)
+ 
+print("residues: ", dssp.statistics.residues)
+
+for res in dssp:
+    print(res.asym_id, res.seq_id, res.compound_id, res.type)
+
+```
+
 Usage
 -----
 

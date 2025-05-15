@@ -42,6 +42,7 @@ endif()
 # Optionally build a version to be installed inside CCP4
 option(BUILD_FOR_CCP4 "Build a version to be installed in CCP4" OFF)
 option(BUILD_DOCUMENTATION "Generate the documentation files using pandoc" OFF)
+option(BUILD_PYTHON_MODULE "Build an experimental Python module" OFF)
 option(INSTALL_LIBRARY "Install the libdssp library" OFF)
 
 if(BUILD_FOR_CCP4)
@@ -58,24 +59,39 @@ if(BUILD_FOR_CCP4)
 	endif()
 endif()
 
+if(WIN32)
+	if(${CMAKE_SYSTEM_VERSION} GREATER_EQUAL 10) # Windows 10
+		add_definitions(-D _WIN32_WINNT=0x0A00)
+	elseif(${CMAKE_SYSTEM_VERSION} EQUAL 6.3) # Windows 8.1
+		add_definitions(-D _WIN32_WINNT=0x0603)
+	elseif(${CMAKE_SYSTEM_VERSION} EQUAL 6.2) # Windows 8
+		add_definitions(-D _WIN32_WINNT=0x0602)
+	elseif(${CMAKE_SYSTEM_VERSION} EQUAL 6.1) # Windows 7
+		add_definitions(-D _WIN32_WINNT=0x0601)
+	elseif(${CMAKE_SYSTEM_VERSION} EQUAL 6.0) # Windows Vista
+		add_definitions(-D _WIN32_WINNT=0x0600)
+	else() # Windows XP (5.1)
+		add_definitions(-D _WIN32_WINNT=0x0501)
+	endif()
+
+	# Man, this is 2024 we're living in...
+	add_definitions(-DNOMINMAX)
+
+	# We do not want to write an export file for all our symbols...
+	set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS ON)
+
+	if(BUILD_PYTHON_MODULE)
+		message(WARNING "Python module is not working on Windows, yet, sorry")
+		set(BUILD_PYTHON_MODULE OFF)
+	endif()
+endif()
+
 if(MSVC)
 	# make msvc standards compliant...
-	add_compile_options(/permissive-)
+	add_compile_options(/permissive- /bigobj)
 	add_link_options(/NODEFAULTLIB:library)
 
-	macro(get_WIN32_WINNT version)
-		if(WIN32 AND CMAKE_SYSTEM_VERSION)
-			set(ver ${CMAKE_SYSTEM_VERSION})
-			string(REPLACE "." "" ver ${ver})
-			string(REGEX REPLACE "([0-9])" "0\\1" ver ${ver})
-
-			set(${version} "0x${ver}")
-		endif()
-	endmacro()
-
-	get_WIN32_WINNT(ver)
-	add_definitions(-D_WIN32_WINNT=${ver})
-
+	# This is dubious...
 	if(BUILD_SHARED_LIBS)
 		set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>DLL")
 	else()
@@ -103,22 +119,31 @@ if(CMAKE_VERSION GREATER_EQUAL 3.28)
 	set(EXLC "EXCLUDE_FROM_ALL")
 endif()
 
-FetchContent_Declare(
-	mcfp
-	${EXLC}
-	GIT_REPOSITORY https://github.com/mhekkel/libmcfp
-	GIT_TAG v1.4.2)
+find_package(mcfp 1.4.2 QUIET)
 
-FetchContent_MakeAvailable(mcfp)
+if(NOT mcfp_FOUND)
+	FetchContent_Declare(
+		mcfp
+		${EXLC}
+		GIT_REPOSITORY https://github.com/mhekkel/libmcfp
+		GIT_TAG v1.4.2)
+	FetchContent_MakeAvailable(mcfp)
+endif()
 
-FetchContent_Declare(
-	cifpp
-	${EXLC}
-	GIT_REPOSITORY https://github.com/pdb-redo/libcifpp.git
-	GIT_TAG v8.0.1
-)
+find_package(cifpp 8.0.1 QUIET)
 
-FetchContent_MakeAvailable(cifpp)
+if(NOT cifpp_FOUND)
+	FetchContent_Declare(
+		cifpp
+		${EXLC}
+		GIT_REPOSITORY https://github.com/pdb-redo/libcifpp.git
+		GIT_TAG v8.0.1)
+	FetchContent_MakeAvailable(cifpp)
+	get_target_property(CIFPP_SOURCE_DIR cifpp SOURCE_DIR)
+	set(CIFPP_DATA_DIR ${CIFPP_SOURCE_DIR})
+else()
+	set(CIFPP_DATA_DIR ${CIFPP_SHARE_DIR})
+endif()
 
 if(INSTALL_LIBRARY)
 	add_subdirectory(libdssp)
@@ -136,10 +161,11 @@ if(USE_RSRC)
 		${CIFPP_SHARE_DIR}/mmcif_ddl.dic
 		${CMAKE_CURRENT_SOURCE_DIR}/libdssp/mmcif_pdbx/dssp-extension.dic)
 else()
-	get_target_property(CIFPP_SOURCE_DIR cifpp SOURCE_DIR)
 	get_target_property(LIBDSSP_SOURCE_DIR dssp SOURCE_DIR)
 
-	install(FILES ${CIFPP_SOURCE_DIR}/rsrc/mmcif_pdbx.dic ${CMAKE_CURRENT_SOURCE_DIR}/libdssp/mmcif_pdbx/dssp-extension.dic
+	install(FILES
+		${CIFPP_DATA_DIR}/mmcif_pdbx.dic
+		${CMAKE_CURRENT_SOURCE_DIR}/libdssp/mmcif_pdbx/dssp-extension.dic
 		DESTINATION ${CIFPP_SHARE_DIR})
 endif()
 
@@ -165,6 +191,11 @@ endif()
 # test
 if(BUILD_TESTING)
 	add_subdirectory(test)
+endif()
+
+# Python
+if(BUILD_PYTHON_MODULE)
+	add_subdirectory(python-module)
 endif()
 
 include(InstallRequiredSystemLibraries)

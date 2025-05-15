@@ -28,7 +28,7 @@ target_sources(dssp
 	FILES include/dssp.hpp
 )
 
-target_link_libraries(dssp PRIVATE cifpp::cifpp)
+target_link_libraries(dssp PUBLIC cifpp::cifpp)
 
 set_target_properties(dssp PROPERTIES POSITION_INDEPENDENT_CODE ON)
 target_compile_features(dssp PUBLIC cxx_std_17)
@@ -42,7 +42,7 @@ target_include_directories(dssp
 # Install rules
 install(TARGETS dssp
 	EXPORT dssp
-	FILE_SET dssp_header DESTINATION "include")
+	FILE_SET dssp_header DESTINATION include)
 
 if(MSVC AND BUILD_SHARED_LIBS)
 	install(
@@ -52,23 +52,17 @@ if(MSVC AND BUILD_SHARED_LIBS)
 endif()
 
 install(EXPORT dssp
-	FILE "dsspTargets.cmake"
+	FILE "dssp-targets.cmake"
 	NAMESPACE dssp::
 	DESTINATION lib/cmake/dssp
 )
 
-set(CONFIG_TEMPLATE_FILE ${CMAKE_CURRENT_SOURCE_DIR}/cmake/dsspConfig.cmake.in)
+set(CONFIG_TEMPLATE_FILE ${CMAKE_CURRENT_SOURCE_DIR}/cmake/dssp-config.cmake.in)
 
 configure_package_config_file(
 	${CONFIG_TEMPLATE_FILE}
-	${CMAKE_CURRENT_BINARY_DIR}/dssp/dsspConfig.cmake
+	${CMAKE_CURRENT_BINARY_DIR}/dssp/dssp-config.cmake
 	INSTALL_DESTINATION lib/cmake/dssp
-)
-
-install(FILES
-	"${CMAKE_CURRENT_BINARY_DIR}/dssp/dsspConfig.cmake"
-	DESTINATION lib/cmake/dssp
-	COMPONENT Devel
 )
 
 set(dssp_MAJOR_VERSION ${CMAKE_PROJECT_VERSION_MAJOR})
@@ -82,10 +76,18 @@ set_property(TARGET dssp APPEND PROPERTY
 )
 
 write_basic_package_version_file(
-	"${CMAKE_CURRENT_BINARY_DIR}/dssp/dsspConfigVersion.cmake"
+	"${CMAKE_CURRENT_BINARY_DIR}/dssp/dssp-config-version.cmake"
 	VERSION ${PROJECT_VERSION}
 	COMPATIBILITY AnyNewerVersion
 )
+
+install(FILES
+	"${CMAKE_CURRENT_BINARY_DIR}/dssp/dssp-config.cmake"
+	"${CMAKE_CURRENT_BINARY_DIR}/dssp/dssp-config-version.cmake"
+	DESTINATION lib/cmake/dssp
+	COMPONENT Devel
+)
+
 
 # set(CIFPP_DATA_DIR "${CMAKE_INSTALL_FULL_DATADIR}/libcifpp")
 install(FILES "${CMAKE_CURRENT_SOURCE_DIR}/mmcif_pdbx/dssp-extension.dic"
