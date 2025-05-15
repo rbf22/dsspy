@@ -22,16 +22,16 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 # SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+include(CPM)
+
 if(CMAKE_VERSION GREATER_EQUAL 3.30)
 	cmake_policy(SET CMP0167 NEW)
 endif()
 
 find_package(Python REQUIRED COMPONENTS Interpreter Development)
-find_package(Boost 1.83 QUIET COMPONENTS python)
+find_package(Boost 1.84 QUIET COMPONENTS python)
 
 if(NOT Boost_FOUND)
-	include(CPM)
-
 	# boost is a huge project and directly downloading the 'alternate release'
 	# from github is much faster than recursively cloning the repo.
 	CPMAddPackage(
