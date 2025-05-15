@@ -41,6 +41,6 @@ if(BUILD_PYTHON_MODULE)
 
 	add_test(NAME python_module COMMAND ${Python_EXECUTABLE} "${CMAKE_CURRENT_SOURCE_DIR}/test-python.py")
 	set_tests_properties(python_module PROPERTIES
-		ENVIRONMENT "PYTHONPATH=${CMAKE_BINARY_DIR}/lib"
+		ENVIRONMENT "PYTHONPATH=$<TARGET_FILE_DIR:mkdssp_module>"
 		WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}")
 endif()
