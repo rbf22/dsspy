@@ -52,7 +52,7 @@ git clone https://github.com/PDB-REDO/dssp.git
 cd dssp
 cmake -S . -B build -DBUILD_PYTHON_MODULE=ON
 cmake --build build
-cmake --install build
+sudo cmake --install build
 ```
 
 After that you can use dssp in a python script, like this:
@@ -72,7 +72,7 @@ dssp = dssp(file_content)
 print("residues: ", dssp.statistics.residues)
 
 for res in dssp:
-    print(res.asym_id, res.seq_id, res.compound_id)
+    print(res.asym_id, res.seq_id, res.compound_id, res.type)
 
 ```
 
