@@ -40,10 +40,10 @@ if(NOT Boost_FOUND)
 		URL https://github.com/boostorg/boost/releases/download/boost-1.84.0/boost-1.84.0.tar.xz
 		URL_HASH SHA256=2e64e5d79a738d0fa6fb546c6e5c2bd28f88d268a2a080546f74e5ff98f29d0e
 		OPTIONS
-			"BOOST_ENABLE_CMAKE ON"
-			"BOOST_INCLUDE_LIBRARIES python"
-			"BOOST_ENABLE_PYTHON ON"
-			"CMAKE_POSITION_INDEPENDENT_CODE ON"
+		"BOOST_ENABLE_CMAKE ON"
+		"BOOST_INCLUDE_LIBRARIES python"
+		"BOOST_ENABLE_PYTHON ON"
+		"CMAKE_POSITION_INDEPENDENT_CODE ON"
 	)
 endif()
 
@@ -65,7 +65,14 @@ set_target_properties(mkdssp_module
 	RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin
 )
 
-if(MSVC)
+if(WIN32)
+	# python modules use this on Windows
+	set_target_properties(
+		mathutils_module
+		PROPERTIES
+		SUFFIX ".pyd"
+	)
+
 	install(TARGETS mkdssp_module RUNTIME DESTINATION "${Python_SITELIB}")
 else()
 	install(TARGETS mkdssp_module LIBRARY DESTINATION "${Python_SITELIB}")
