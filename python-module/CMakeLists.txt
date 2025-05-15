@@ -29,7 +29,7 @@ if(CMAKE_VERSION GREATER_EQUAL 3.30)
 endif()
 
 find_package(Python REQUIRED COMPONENTS Interpreter Development)
-find_package(Boost 1.84 QUIET COMPONENTS python)
+find_package(Boost 1.83 QUIET COMPONENTS python)
 
 if(NOT Boost_FOUND)
 	# boost is a huge project and directly downloading the 'alternate release'
