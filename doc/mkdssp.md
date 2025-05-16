@@ -92,13 +92,7 @@ calculated for H-bonds.\
 
 # BUGS
 
-The mmCIF format currently lacks a lot of information that was available
-in the old format like information about the bridge pairs or the span of
-the various helices recognized. Also the accessibility information is
-left out.
-
-If you think this information should be part of the output, please
-contact the author.
+If mkdssp does not behave as expected, please contact the author.
 
 # AUTHOR
 
