@@ -147,8 +147,6 @@ else()
 	set(CIFPP_DATA_DIR ${CIFPP_SHARE_DIR})
 endif()
 
-message(NOTICE "5 CIFPP_DATA_DIR: ${CIFPP_DATA_DIR}")
-
 if(INSTALL_LIBRARY)
 	add_subdirectory(libdssp)
 else()
