@@ -14,12 +14,6 @@ endif()
 
 add_executable(unit-test-dssp ${CMAKE_CURRENT_SOURCE_DIR}/unit-test-dssp.cpp ${PROJECT_SOURCE_DIR}/libdssp/src/dssp-io.cpp)
 
-if(USE_RSRC)
-	mrc_target_resources(unit-test-dssp
-		${CIFPP_SHARE_DIR}/mmcif_pdbx.dic ${CIFPP_SHARE_DIR}/mmcif_ddl.dic
-		${CMAKE_CURRENT_SOURCE_DIR}/../libdssp/mmcif_pdbx/dssp-extension.dic)
-endif()
-
 target_include_directories(unit-test-dssp PRIVATE
 	${CMAKE_CURRENT_SOURCE_DIR}/src
 	${CMAKE_CURRENT_SOURCE_DIR}/include
