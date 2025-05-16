@@ -140,11 +140,22 @@ if(NOT cifpp_FOUND)
 		GIT_REPOSITORY https://github.com/pdb-redo/libcifpp.git
 		GIT_TAG v8.0.1)
 	FetchContent_MakeAvailable(cifpp)
+
+	message(NOTICE "1 CIFPP_DATA_DIR: ${CIFPP_DATA_DIR}")
+
 	get_target_property(CIFPP_SOURCE_DIR cifpp SOURCE_DIR)
-	set(CIFPP_DATA_DIR ${CIFPP_SOURCE_DIR})
+
+	message(NOTICE "2 CIFPP_DATA_DIR: ${CIFPP_DATA_DIR}")
+	set(CIFPP_DATA_DIR ${CIFPP_SOURCE_DIR}/rsrc)
+
+	message(NOTICE "3 CIFPP_DATA_DIR: ${CIFPP_DATA_DIR}")
 else()
 	set(CIFPP_DATA_DIR ${CIFPP_SHARE_DIR})
+
+	message(NOTICE "4 CIFPP_DATA_DIR: ${CIFPP_DATA_DIR}")
 endif()
+
+message(NOTICE "5 CIFPP_DATA_DIR: ${CIFPP_DATA_DIR}")
 
 if(INSTALL_LIBRARY)
 	add_subdirectory(libdssp)
@@ -158,8 +169,8 @@ target_link_libraries(mkdssp PRIVATE mcfp::mcfp dssp::dssp cifpp::cifpp)
 
 if(USE_RSRC)
 	mrc_target_resources(mkdssp
-		${CIFPP_SHARE_DIR}/mmcif_pdbx.dic
-		${CIFPP_SHARE_DIR}/mmcif_ddl.dic
+		${CIFPP_DATA_DIR}/mmcif_pdbx.dic
+		${CIFPP_DATA_DIR}/mmcif_ddl.dic
 		${CMAKE_CURRENT_SOURCE_DIR}/libdssp/mmcif_pdbx/dssp-extension.dic)
 else()
 	get_target_property(LIBDSSP_SOURCE_DIR dssp SOURCE_DIR)
