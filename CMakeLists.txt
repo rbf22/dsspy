@@ -25,7 +25,7 @@
 cmake_minimum_required(VERSION 3.23)
 
 # set the project name
-project(mkdssp VERSION 4.5.2 LANGUAGES CXX)
+project(mkdssp VERSION 4.5.3 LANGUAGES CXX)
 
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 
@@ -141,18 +141,10 @@ if(NOT cifpp_FOUND)
 		GIT_TAG v8.0.1)
 	FetchContent_MakeAvailable(cifpp)
 
-	message(NOTICE "1 CIFPP_DATA_DIR: ${CIFPP_DATA_DIR}")
-
 	get_target_property(CIFPP_SOURCE_DIR cifpp SOURCE_DIR)
-
-	message(NOTICE "2 CIFPP_DATA_DIR: ${CIFPP_DATA_DIR}")
 	set(CIFPP_DATA_DIR ${CIFPP_SOURCE_DIR}/rsrc)
-
-	message(NOTICE "3 CIFPP_DATA_DIR: ${CIFPP_DATA_DIR}")
 else()
 	set(CIFPP_DATA_DIR ${CIFPP_SHARE_DIR})
-
-	message(NOTICE "4 CIFPP_DATA_DIR: ${CIFPP_DATA_DIR}")
 endif()
 
 message(NOTICE "5 CIFPP_DATA_DIR: ${CIFPP_DATA_DIR}")

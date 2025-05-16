@@ -1,4 +1,7 @@
-Version 4.5.1
+Version 4.5.3
+- Fix makefile to locate dictionary files
+
+Version 4.5.2
 - Use find_package before fetching libraries, again
 - Added Python module
 
