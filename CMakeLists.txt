@@ -25,13 +25,19 @@
 cmake_minimum_required(VERSION 3.23)
 
 # set the project name
-project(mkdssp VERSION 4.5.2 LANGUAGES CXX)
+project(mkdssp VERSION 4.5.3 LANGUAGES CXX)
 
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 
 include(CTest)
 include(VersionString)
 include(FetchContent)
+
+# The default build type must be set before project()
+if(CMAKE_SOURCE_DIR STREQUAL CMAKE_CURRENT_SOURCE_DIR AND NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
+  set(CMAKE_BUILD_TYPE Release CACHE STRING "Build type" FORCE)
+  set_property(CACHE CMAKE_BUILD_TYPE PROPERTY STRINGS "Debug" "Release" "MinSizeRel" "RelWithDebInfo")
+endif()
 
 if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
 	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -Wno-unused-parameter -Wno-missing-field-initializers")
@@ -79,11 +85,6 @@ if(WIN32)
 
 	# We do not want to write an export file for all our symbols...
 	set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS ON)
-
-	if(BUILD_PYTHON_MODULE)
-		message(WARNING "Python module is not working on Windows, yet, sorry")
-		set(BUILD_PYTHON_MODULE OFF)
-	endif()
 endif()
 
 if(MSVC)
@@ -139,11 +140,14 @@ if(NOT cifpp_FOUND)
 		GIT_REPOSITORY https://github.com/pdb-redo/libcifpp.git
 		GIT_TAG v8.0.1)
 	FetchContent_MakeAvailable(cifpp)
+
 	get_target_property(CIFPP_SOURCE_DIR cifpp SOURCE_DIR)
-	set(CIFPP_DATA_DIR ${CIFPP_SOURCE_DIR})
+	set(CIFPP_DATA_DIR ${CIFPP_SOURCE_DIR}/rsrc)
 else()
 	set(CIFPP_DATA_DIR ${CIFPP_SHARE_DIR})
 endif()
+
+message(NOTICE "5 CIFPP_DATA_DIR: ${CIFPP_DATA_DIR}")
 
 if(INSTALL_LIBRARY)
 	add_subdirectory(libdssp)
@@ -157,8 +161,8 @@ target_link_libraries(mkdssp PRIVATE mcfp::mcfp dssp::dssp cifpp::cifpp)
 
 if(USE_RSRC)
 	mrc_target_resources(mkdssp
-		${CIFPP_SHARE_DIR}/mmcif_pdbx.dic
-		${CIFPP_SHARE_DIR}/mmcif_ddl.dic
+		${CIFPP_DATA_DIR}/mmcif_pdbx.dic
+		${CIFPP_DATA_DIR}/mmcif_ddl.dic
 		${CMAKE_CURRENT_SOURCE_DIR}/libdssp/mmcif_pdbx/dssp-extension.dic)
 else()
 	get_target_property(LIBDSSP_SOURCE_DIR dssp SOURCE_DIR)

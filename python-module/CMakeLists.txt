@@ -22,12 +22,30 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 # SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+include(CPM)
+
 if(CMAKE_VERSION GREATER_EQUAL 3.30)
 	cmake_policy(SET CMP0167 NEW)
 endif()
 
 find_package(Python REQUIRED COMPONENTS Interpreter Development)
-find_package(Boost 1.83 REQUIRED COMPONENTS python)
+find_package(Boost 1.83 QUIET COMPONENTS python)
+
+if(NOT Boost_FOUND)
+	# boost is a huge project and directly downloading the 'alternate release'
+	# from github is much faster than recursively cloning the repo.
+	CPMAddPackage(
+		NAME Boost
+		VERSION 1.84.0
+		URL https://github.com/boostorg/boost/releases/download/boost-1.84.0/boost-1.84.0.tar.xz
+		URL_HASH SHA256=2e64e5d79a738d0fa6fb546c6e5c2bd28f88d268a2a080546f74e5ff98f29d0e
+		OPTIONS
+		"BOOST_ENABLE_CMAKE ON"
+		"BOOST_INCLUDE_LIBRARIES python"
+		"BOOST_ENABLE_PYTHON ON"
+		"CMAKE_POSITION_INDEPENDENT_CODE ON"
+	)
+endif()
 
 # ---------
 add_library(mkdssp_module SHARED dssp-python-plugin.cpp)
@@ -44,10 +62,17 @@ set_target_properties(mkdssp_module
 	OUTPUT_NAME mkdssp
 	LINKER_LANGUAGE CXX
 	LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib
-	RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin
 )
 
-if(MSVC)
+if(WIN32)
+	# python modules use this on Windows
+	set_target_properties(
+		mkdssp_module
+		PROPERTIES
+		SUFFIX ".pyd"
+		RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin
+	)
+
 	install(TARGETS mkdssp_module RUNTIME DESTINATION "${Python_SITELIB}")
 else()
 	install(TARGETS mkdssp_module LIBRARY DESTINATION "${Python_SITELIB}")
