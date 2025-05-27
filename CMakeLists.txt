@@ -133,7 +133,7 @@ endif()
 
 find_package(cifpp 8.0.1 QUIET)
 
-if(NOT cifpp_FOUND)
+if(NOT(cifpp_FOUND OR TARGET cifpp))
 	FetchContent_Declare(
 		cifpp
 		${EXLC}
