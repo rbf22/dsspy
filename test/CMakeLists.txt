@@ -1,16 +1,8 @@
-find_package(Catch2 3 QUIET)
-
-if(NOT Catch2_FOUND)
-	Include(FetchContent)
-
-	FetchContent_Declare(
-		Catch2
-		GIT_REPOSITORY https://github.com/catchorg/Catch2.git
-		GIT_TAG v3.8.0
-	)
-
-	FetchContent_MakeAvailable(Catch2)
-endif()
+CPMFindPackage(
+	NAME Catch2 3
+	GIT_REPOSITORY https://github.com/catchorg/Catch2.git
+	GIT_TAG v3.8.0
+	EXCLUDE_FROM_ALL YES)
 
 add_executable(unit-test-dssp ${CMAKE_CURRENT_SOURCE_DIR}/unit-test-dssp.cpp ${PROJECT_SOURCE_DIR}/libdssp/src/dssp-io.cpp)
 

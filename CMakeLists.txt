@@ -29,14 +29,14 @@ project(mkdssp VERSION 4.5.3 LANGUAGES CXX)
 
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 
+include(CPM)
 include(CTest)
 include(VersionString)
-include(FetchContent)
 
 # The default build type must be set before project()
 if(CMAKE_SOURCE_DIR STREQUAL CMAKE_CURRENT_SOURCE_DIR AND NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
-  set(CMAKE_BUILD_TYPE Release CACHE STRING "Build type" FORCE)
-  set_property(CACHE CMAKE_BUILD_TYPE PROPERTY STRINGS "Debug" "Release" "MinSizeRel" "RelWithDebInfo")
+	set(CMAKE_BUILD_TYPE Release CACHE STRING "Build type" FORCE)
+	set_property(CACHE CMAKE_BUILD_TYPE PROPERTY STRINGS "Debug" "Release" "MinSizeRel" "RelWithDebInfo")
 endif()
 
 if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
@@ -116,31 +116,20 @@ set(CMAKE_THREAD_PREFER_PTHREAD)
 set(THREADS_PREFER_PTHREAD_FLAG)
 find_package(Threads)
 
-if(CMAKE_VERSION GREATER_EQUAL 3.28)
-	set(EXLC "EXCLUDE_FROM_ALL")
-endif()
+CPMFindPackage(
+	NAME mcfp
+	GIT_REPOSITORY https://github.com/mhekkel/libmcfp
+	GIT_TAG v1.4.2
+	EXCLUDE_FROM_ALL YES)
 
-find_package(mcfp 1.4.2 QUIET)
+CPMFindPackage(
+	NAME cifpp
+	GIT_REPOSITORY https://github.com/pdb-redo/libcifpp.git
+	GIT_TAG v8.0.1
+	EXCLUDE_FROM_ALL YES
+)
 
-if(NOT mcfp_FOUND)
-	FetchContent_Declare(
-		mcfp
-		${EXLC}
-		GIT_REPOSITORY https://github.com/mhekkel/libmcfp
-		GIT_TAG v1.4.2)
-	FetchContent_MakeAvailable(mcfp)
-endif()
-
-find_package(cifpp 8.0.1 QUIET)
-
-if(NOT(cifpp_FOUND OR TARGET cifpp))
-	FetchContent_Declare(
-		cifpp
-		${EXLC}
-		GIT_REPOSITORY https://github.com/pdb-redo/libcifpp.git
-		GIT_TAG v8.0.1)
-	FetchContent_MakeAvailable(cifpp)
-
+if(TARGET cifpp)
 	get_target_property(CIFPP_SOURCE_DIR cifpp SOURCE_DIR)
 	set(CIFPP_DATA_DIR ${CIFPP_SOURCE_DIR}/rsrc)
 else()
@@ -155,7 +144,7 @@ endif()
 
 add_executable(mkdssp ${CMAKE_CURRENT_SOURCE_DIR}/src/mkdssp.cpp)
 
-target_link_libraries(mkdssp PRIVATE mcfp::mcfp dssp::dssp cifpp::cifpp)
+target_link_libraries(mkdssp PRIVATE mcfp::mcfp dssp::dssp)
 
 if(USE_RSRC)
 	mrc_target_resources(mkdssp
@@ -191,7 +180,7 @@ if(EXISTS "${CCP4}/html")
 endif()
 
 # test
-if(BUILD_TESTING)
+if(BUILD_TESTING AND PROJECT_IS_TOP_LEVEL)
 	add_subdirectory(test)
 endif()
 
