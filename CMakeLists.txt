@@ -155,9 +155,13 @@ else()
 	get_target_property(LIBDSSP_SOURCE_DIR dssp SOURCE_DIR)
 
 	install(FILES
-		${CIFPP_DATA_DIR}/mmcif_pdbx.dic
 		${CMAKE_CURRENT_SOURCE_DIR}/libdssp/mmcif_pdbx/dssp-extension.dic
 		DESTINATION ${CIFPP_SHARE_DIR})
+
+	if(TARGET cifpp)
+		install(FILES ${CIFPP_DATA_DIR}/mmcif_pdbx.dic
+			DESTINATION ${CIFPP_SHARE_DIR})
+	endif()
 endif()
 
 # Install rules
