@@ -35,8 +35,8 @@ include(FetchContent)
 
 # The default build type must be set before project()
 if(CMAKE_SOURCE_DIR STREQUAL CMAKE_CURRENT_SOURCE_DIR AND NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
-  set(CMAKE_BUILD_TYPE Release CACHE STRING "Build type" FORCE)
-  set_property(CACHE CMAKE_BUILD_TYPE PROPERTY STRINGS "Debug" "Release" "MinSizeRel" "RelWithDebInfo")
+	set(CMAKE_BUILD_TYPE Release CACHE STRING "Build type" FORCE)
+	set_property(CACHE CMAKE_BUILD_TYPE PROPERTY STRINGS "Debug" "Release" "MinSizeRel" "RelWithDebInfo")
 endif()
 
 if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
@@ -155,7 +155,7 @@ endif()
 
 add_executable(mkdssp ${CMAKE_CURRENT_SOURCE_DIR}/src/mkdssp.cpp)
 
-target_link_libraries(mkdssp PRIVATE mcfp::mcfp dssp::dssp cifpp::cifpp)
+target_link_libraries(mkdssp PRIVATE mcfp::mcfp dssp::dssp)
 
 if(USE_RSRC)
 	mrc_target_resources(mkdssp
