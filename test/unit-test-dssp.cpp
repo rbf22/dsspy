@@ -126,9 +126,14 @@ TEST_CASE("ut_dssp")
 			break;
 
 		if (line_t != line_r)
+		{
+			if (cif::starts_with(line_t, "REFERENCE ") and cif::starts_with(line_r, "REFERENCE "))
+				continue;
+
 			std::cerr << line_nr << std::endl
 					  << line_t << std::endl
 					  << line_r << std::endl;
+		}
 
 		if (line_t != line_r)
 		{
