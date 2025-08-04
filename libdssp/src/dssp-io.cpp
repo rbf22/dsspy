@@ -525,8 +525,7 @@ void writeStatistics(cif::datablock &db, const dssp &dssp)
 		{ "nr_of_ss_bridges_total", stats.count.SS_bridges },
 		{ "nr_of_ss_bridges_intra_chain", stats.count.intra_chain_SS_bridges },
 		{ "nr_of_ss_bridges_inter_chain", stats.count.SS_bridges - stats.count.intra_chain_SS_bridges },
-		{ "accessible_surface_of_protein", surface_accessibility }
-	});
+		{ "accessible_surface_of_protein", surface_accessibility } });
 
 	auto &dssp_struct_hbonds = db["dssp_statistics_hbond"];
 
@@ -767,6 +766,18 @@ void annotateDSSP(cif::datablock &db, const dssp &dssp, bool writeOther, bool wr
 	}
 	else
 	{
+		for (auto cat : std::initializer_list<const char *>{
+				 "dssp_struct_bridge_pairs",
+				 "dssp_struct_ladder",
+				 "dssp_statistics",
+				 "dssp_statistics_hbond",
+				 "dssp_statistics_histogram",
+				 "dssp_struct_summary"
+			 })
+		{
+			db.erase(std::remove_if(db.begin(), db.end(), [cat] (cif::category &c) { return c.name() == cat; }), db.end());
+		}
+
 		if (writeNewFormat)
 		{
 			writeBridgePairs(db, dssp);
