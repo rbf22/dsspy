@@ -136,6 +136,7 @@ endif()
 
 if(TARGET cifpp)
 	get_target_property(CIFPP_SOURCE_DIR cifpp SOURCE_DIR)
+	get_target_property(CIFPP_SHARE_DIR cifpp CIFPP_SHARE_DIR)
 	set(CIFPP_DATA_DIR ${CIFPP_SOURCE_DIR}/rsrc)
 elseif(DEFINED CIFPP_SHARE_DIR)
 	message(NOTICE "dssp: using ${CIFPP_SHARE_DIR} from CIFPP_SHARE_DIR as CIFPP_DATA_DIR")
