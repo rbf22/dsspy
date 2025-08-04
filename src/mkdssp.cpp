@@ -114,7 +114,16 @@ int d_main(int argc, const char *argv[])
 
 	// private mmcif_pdbx dictionary?
 	if (config.has("mmcif-dictionary"))
-		cif::add_file_resource("mmcif_pdbx.dic", config.get<std::string>("mmcif-dictionary"));
+	{
+		fs::path mmcif_dict = config.get<std::string>("mmcif-dictionary");
+
+		cif::add_file_resource("mmcif_pdbx.dic", mmcif_dict);
+
+		// Try to be smart, maybe dssp-extension.dic is at that location as well?
+		auto dir = fs::canonical(mmcif_dict.parent_path());
+		if (auto dssp_dict = cif::load_resource("dssp-extension.dic"); dssp_dict == nullptr and fs::exists(dir / "dssp-extension.dic"))
+			cif::add_data_directory(dir);
+	}
 
 	cif::file f;
 
