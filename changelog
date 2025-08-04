@@ -1,3 +1,6 @@
+Version 4.5.5
+- Clean up old DSSP data before writing new
+
 Version 4.5.4
 - Update reference information
 - Better fix for locating/installing dictionary files
