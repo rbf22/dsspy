@@ -1,3 +1,7 @@
+Version 4.5.4
+- Update reference information
+- Better fix for locating/installing dictionary files
+
 Version 4.5.3
 - Fix makefile to locate dictionary files
 
