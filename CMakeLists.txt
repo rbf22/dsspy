@@ -122,18 +122,26 @@ CPMFindPackage(
 	GIT_TAG v1.4.2
 	EXCLUDE_FROM_ALL YES)
 
-CPMFindPackage(
-	NAME cifpp
-	GIT_REPOSITORY https://github.com/pdb-redo/libcifpp.git
-	GIT_TAG v8.0.1
-	EXCLUDE_FROM_ALL YES
-)
+# CPMFindPackage does not pass on variables set with set_and_check
+# Working around this here
+find_package(cifpp 8.0.1 QUIET)
+
+if(NOT cifpp_FOUND)
+	CPMAddPackage(
+		NAME cifpp
+		GIT_REPOSITORY https://github.com/pdb-redo/libcifpp.git
+		GIT_TAG v8.0.1
+		EXCLUDE_FROM_ALL YES)
+endif()
 
 if(TARGET cifpp)
 	get_target_property(CIFPP_SOURCE_DIR cifpp SOURCE_DIR)
 	set(CIFPP_DATA_DIR ${CIFPP_SOURCE_DIR}/rsrc)
-else()
+elseif(DEFINED CIFPP_SHARE_DIR)
+	message(NOTICE "dssp: using ${CIFPP_SHARE_DIR} from CIFPP_SHARE_DIR as CIFPP_DATA_DIR")
 	set(CIFPP_DATA_DIR ${CIFPP_SHARE_DIR})
+else()
+	message(FATAL_ERROR "dssp: The CIFPP_SHARE_DIR variable is not found in the cifpp configuration files")
 endif()
 
 if(INSTALL_LIBRARY)
@@ -149,7 +157,6 @@ target_link_libraries(mkdssp PRIVATE mcfp::mcfp dssp::dssp)
 if(USE_RSRC)
 	mrc_target_resources(mkdssp
 		${CIFPP_DATA_DIR}/mmcif_pdbx.dic
-		${CIFPP_DATA_DIR}/mmcif_ddl.dic
 		${CMAKE_CURRENT_SOURCE_DIR}/libdssp/mmcif_pdbx/dssp-extension.dic)
 else()
 	get_target_property(LIBDSSP_SOURCE_DIR dssp SOURCE_DIR)
