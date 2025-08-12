@@ -1,5 +1,7 @@
 Version 4.5.5
 - Clean up old DSSP data before writing new
+- Regression: check for pdbx_poly_seq_scheme and if missing
+  use the repair mode to read the file. (i.e. cif::pdb::read)
 
 Version 4.5.4
 - Update reference information

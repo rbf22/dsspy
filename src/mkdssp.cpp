@@ -140,6 +140,9 @@ int d_main(int argc, const char *argv[])
 
 		f.load(in);
 		f.front().set_validator(&cf.get("mmcif_pdbx.dic"));
+
+		if (f.empty() or f.front().get("pdbx_poly_seq_scheme") == nullptr)
+			throw std::runtime_error("Missing pdbx_poly_seq_scheme, will attempt to recover...");
 	}
 	catch (const std::exception &e)
 	{
