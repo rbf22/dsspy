@@ -1,0 +1,23 @@
+[tool.poetry]
+name = "dsspy"
+version = "0.1.0"
+description = "A Python wrapper for the DSSP program."
+authors = ["Your Name <you@example.com>"]
+readme = "README.md"
+packages = [{include = "dsspy"}]
+
+[tool.poetry.dependencies]
+python = ">=3.11,<3.13"
+biopython = "^1.83"
+
+[tool.poetry.group.dev.dependencies]
+ruff = "^0.3.4"
+pylint = "^3.1.0"
+mypy = "^1.9.0"
+pytest = "^8.1.1"
+pytest-cov = "^5.0.0"
+deptry = "^0.16.0"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"

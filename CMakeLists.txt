@@ -122,6 +122,26 @@ CPMFindPackage(
 	GIT_TAG v1.4.2
 	EXCLUDE_FROM_ALL YES)
 
+if(BUILD_PYTHON_MODULE)
+	find_package(Boost 1.83 QUIET COMPONENTS python regex)
+
+	if(NOT Boost_FOUND)
+		# boost is a huge project and directly downloading the 'alternate release'
+		# from github is much faster than recursively cloning the repo.
+		CPMAddPackage(
+			NAME Boost
+			VERSION 1.84.0
+			URL https://github.com/boostorg/boost/releases/download/boost-1.84.0/boost-1.84.0.tar.xz
+			URL_HASH SHA256=2e64e5d79a738d0fa6fb546c6e5c2bd28f88d268a2a080546f74e5ff98f29d0e
+			OPTIONS
+			"BOOST_ENABLE_CMAKE ON"
+			"BOOST_INCLUDE_LIBRARIES python;regex"
+			"BOOST_ENABLE_PYTHON ON"
+			"CMAKE_POSITION_INDEPENDENT_CODE ON"
+		)
+	endif()
+endif()
+
 # CPMFindPackage does not pass on variables set with set_and_check
 # Working around this here
 find_package(cifpp 8.0.1 QUIET)
