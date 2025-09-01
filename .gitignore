@@ -10,3 +10,6 @@ python-module/mkdssp.so
 # Python cache files
 __pycache__/
 *.pyc
+.pytest_cache/
+.coverage
+dsspy.egg-info/

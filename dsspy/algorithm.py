@@ -1,5 +1,7 @@
 import numpy as np
 from dsspy.core import Residue
+from Bio.PDB.vectors import Vector, calc_dihedral
+
 
 K_MIN_HBOND_ENERGY = -9.9
 K_MAX_HBOND_ENERGY = -0.5
@@ -272,25 +274,15 @@ class DSSP:
 def dihedral_angle(p1, p2, p3, p4):
     """
     Calculates the dihedral angle between four points.
-    Using the formula from https://en.wikipedia.org/wiki/Dihedral_angle
+    This function uses the Bio.PDB.calc_dihedral function to ensure
+    correctness and consistency with the project's dependencies.
     """
-    v12 = p1 - p2
-    v43 = p4 - p3
-    z = p2 - p3
-
-    p = np.cross(z, v12)
-    x = np.cross(z, v43)
-    y = np.cross(z, x)
-
-    u = np.dot(x, x)
-    v = np.dot(y, y)
-
-    if u > 0 and v > 0:
-        u = np.dot(p, x) / np.sqrt(u)
-        v = np.dot(p, y) / np.sqrt(v)
-        if u != 0 or v != 0:
-            return np.rad2deg(np.arctan2(v, u))
-    return 360.0
+    v1 = Vector(p1)
+    v2 = Vector(p2)
+    v3 = Vector(p3)
+    v4 = Vector(p4)
+    angle = calc_dihedral(v1, v2, v3, v4)
+    return np.rad2deg(angle)
 
 def calculate_geometry(residues):
     """
