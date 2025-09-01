@@ -30,13 +30,25 @@ class ChainBreakType(Enum):
     NEW_CHAIN = 1
     GAP = 2
 
+
+class HBond:
+    def __init__(self, residue, energy):
+        self.residue = residue
+        self.energy = energy
+
+    def __repr__(self):
+        if self.residue:
+            return f"<HBond to {self.residue.id} with energy {self.energy}>"
+        return f"<HBond to None with energy {self.energy}>"
+
+
 class Residue:
     def __init__(self, biopython_residue, number):
         self.biopython_residue = biopython_residue
         self.number = number
         self.secondary_structure = StructureType.LOOP
-        self.hbond_acceptor = []
-        self.hbond_donor = []
+        self.hbond_acceptor = [HBond(None, 0), HBond(None, 0)]
+        self.hbond_donor = [HBond(None, 0), HBond(None, 0)]
         self.beta_partner = [None, None]
         self.sheet = 0
         self.strand = 0
@@ -59,16 +71,32 @@ class Residue:
         Assigns the coordinates of the hydrogen atom based on the previous residue.
         """
         if self.resname != 'PRO' and self.prev_residue:
-            n = self.biopython_residue['N'].get_coord()
-            pc = self.prev_residue.biopython_residue['C'].get_coord()
-            po = self.prev_residue.biopython_residue['O'].get_coord()
+            n = self.n_coord
+            pc = self.prev_residue.c_coord
+            po = self.prev_residue.o_coord
 
             co_dist = pc - po
             self.h_coord = n + co_dist / np.linalg.norm(co_dist)
         else:
             # For prolines and the first residue in a chain, we don't have a previous C=O to base the H on.
             # The C++ code initializes H to N's position in this case.
-            self.h_coord = self.biopython_residue['N'].get_coord()
+            self.h_coord = self.n_coord
+
+    @property
+    def ca_coord(self):
+        return self.biopython_residue['CA'].get_coord()
+
+    @property
+    def n_coord(self):
+        return self.biopython_residue['N'].get_coord()
+
+    @property
+    def c_coord(self):
+        return self.biopython_residue['C'].get_coord()
+
+    @property
+    def o_coord(self):
+        return self.biopython_residue['O'].get_coord()
 
     @property
     def id(self):

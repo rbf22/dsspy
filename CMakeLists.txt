@@ -173,6 +173,7 @@ endif()
 add_executable(mkdssp ${CMAKE_CURRENT_SOURCE_DIR}/src/mkdssp.cpp)
 
 target_link_libraries(mkdssp PRIVATE mcfp::mcfp dssp::dssp)
+target_compile_definitions(mkdssp PRIVATE "DATA_DIR=\"${CIFPP_DATA_DIR}\"")
 
 if(USE_RSRC)
 	mrc_target_resources(mkdssp
