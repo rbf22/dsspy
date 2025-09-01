@@ -1,5 +1,5 @@
 import datetime
-from dsspy.core import Residue, StructureType, HelixType, HelixPositionType
+from core import Residue, StructureType, HelixType, HelixPositionType
 
 # 3-to-1 letter code for amino acids
 AA_CODES = {

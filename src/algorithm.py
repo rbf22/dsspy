@@ -1,6 +1,6 @@
 import numpy as np
 
-from dsspy.core import Residue, HBond
+from core import Residue, HBond, HelixPositionType, HelixType, StructureType
 
 
 def dihedral_angle(p1, p2, p3, p4):
@@ -82,3 +82,69 @@ def calculate_h_bonds(residues: list[Residue]) -> None:
             calculate_h_bond_energy(residues[i], residues[j])
             if j != i + 1:
                 calculate_h_bond_energy(residues[j], residues[i])
+
+
+def calculate_pp_helices(residues: list[Residue], stretch_length: int = 3) -> None:
+    """
+    Calculates Poly-proline II (PPII) helices based on phi/psi angles.
+    This is a port of the C++ implementation.
+    """
+    if stretch_length not in [2, 3]:
+        raise ValueError("Unsupported stretch length for PPII helix calculation")
+
+    epsilon = 29.0
+    phi_min = -75.0 - epsilon
+    phi_max = -75.0 + epsilon
+    psi_min = 145.0 - epsilon
+    psi_max = 145.0 + epsilon
+
+    n_residues = len(residues)
+
+    # This loop is a direct port from the C++ code, which has a peculiar range.
+    for i in range(1, n_residues - 3):
+        if stretch_length == 2:
+            res_i = residues[i]
+            res_i1 = residues[i+1]
+
+            if not (phi_min <= res_i.phi <= phi_max and psi_min <= res_i.psi <= psi_max and
+                    phi_min <= res_i1.phi <= phi_max and psi_min <= res_i1.psi <= psi_max):
+                continue
+
+            flag = res_i.helix_flags[HelixType.PP]
+            if flag == HelixPositionType.NONE:
+                res_i.helix_flags[HelixType.PP] = HelixPositionType.START
+            elif flag == HelixPositionType.END:
+                res_i.helix_flags[HelixType.PP] = HelixPositionType.MIDDLE
+
+            residues[i + 1].helix_flags[HelixType.PP] = HelixPositionType.END
+
+            if res_i.secondary_structure == StructureType.LOOP:
+                res_i.secondary_structure = StructureType.HELIX_PPII
+            if res_i1.secondary_structure == StructureType.LOOP:
+                res_i1.secondary_structure = StructureType.HELIX_PPII
+
+        elif stretch_length == 3:
+            res_i = residues[i]
+            res_i1 = residues[i+1]
+            res_i2 = residues[i+2]
+
+            if not (phi_min <= res_i.phi <= phi_max and psi_min <= res_i.psi <= psi_max and
+                    phi_min <= res_i1.phi <= phi_max and psi_min <= res_i1.psi <= psi_max and
+                    phi_min <= res_i2.phi <= phi_max and psi_min <= res_i2.psi <= psi_max):
+                continue
+
+            flag = res_i.helix_flags[HelixType.PP]
+            if flag == HelixPositionType.NONE:
+                res_i.helix_flags[HelixType.PP] = HelixPositionType.START
+            elif flag == HelixPositionType.END:
+                res_i.helix_flags[HelixType.PP] = HelixPositionType.START_AND_END
+
+            res_i1.helix_flags[HelixType.PP] = HelixPositionType.MIDDLE
+            res_i2.helix_flags[HelixType.PP] = HelixPositionType.END
+
+            if res_i.secondary_structure == StructureType.LOOP:
+                res_i.secondary_structure = StructureType.HELIX_PPII
+            if res_i1.secondary_structure == StructureType.LOOP:
+                res_i1.secondary_structure = StructureType.HELIX_PPII
+            if res_i2.secondary_structure == StructureType.LOOP:
+                res_i2.secondary_structure = StructureType.HELIX_PPII
