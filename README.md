@@ -1,82 +1,50 @@
+# dsspy: A Python implementation of DSSP
+
 [![github CI](https://github.com/pdb-redo/dssp/actions/workflows/cmake-multi-platform.yml/badge.svg)](https://github.com/pdb-redo/dssp/actions)
 [![GitHub License](https://img.shields.io/github/license/pdb-redo/dssp)](https://github.com/pdb-redo/dssp/LICENSE)
 
-DSSP 4.5
-========
+`dsspy` is a Python package that provides a pure Python implementation of the DSSP algorithm for assigning secondary structure to proteins. This project is a complete rewrite of the original C++ `mkdssp` application, designed for seamless integration into modern Python-based bioinformatics workflows.
 
-This is a rewrite of DSSP, now offering full mmCIF support. The difference
-with previous releases of DSSP is that it now writes out an annotated mmCIF
-file by default, storing the secondary structure information in the
-`_struct_conf` category.
+## Installation
 
-Another new feature in this version of DSSP is that it now defines
-Poly-Proline helices as well.
+This project uses [Poetry](https://python-poetry.org/) for dependency management and packaging. To install the necessary dependencies, follow these steps:
 
-The DSSP program was designed by _Wolfgang Kabsch_ and _Chris Sander_ to
-standardize secondary structure assignment. DSSP is a database of secondary
-structure assignments (and much more) for all protein entries in the Protein
-Data Bank (PDB). DSSP is also the program that calculates DSSP entries from
-PDB entries.
+1.  **Install Poetry**:
+    If you don't have Poetry installed, you can find instructions on the [official website](https://python-poetry.org/docs/#installation).
 
-DSSP does **not** predict secondary structure.
+2.  **Install Dependencies**:
+    Clone this repository and run the following command in the project root to install the required packages into a virtual environment:
+    ```console
+    poetry install
+    ```
 
-Requirements
-------------
+## Usage
 
-A good, modern compiler is needed to build the mkdssp program since it uses
-many new C++20 features.
-
-Building
---------
-
-The new makefile for dssp will take care of downloading and building all requirements
-automatically. So in theory, building is as simple as:
-
-```console
-git clone https://github.com/PDB-REDO/dssp.git
-cd dssp
-cmake -S . -B build
-cmake --build build
-cmake --install build
-```
-
-Python module
--------------
-
-Since version 4.5.2 it is possible to build a Python module to directy work
-with DSSP info inside your Python scripts. To build and install the Python
-module use the following commands instead:
-
-```console
-git clone https://github.com/PDB-REDO/dssp.git
-cd dssp
-cmake -S . -B build -DBUILD_PYTHON_MODULE=ON
-cmake --build build
-sudo cmake --install build
-```
-
-After that you can use dssp in a python script, like this:
+Here's a basic example of how to use `dsspy` to analyze a protein structure from a PDB file:
 
 ```python
-from mkdssp import dssp
-import os
-import gzip
+from dsspy.io import DSSP
 
-file_path = os.path.join("..", "test", "1cbs.cif.gz")
+# Example of reading a PDB file and calculating DSSP
+with open("path/to/your/protein.pdb", "r") as f:
+    dssps = DSSP.from_pdb(f)
 
-with gzip.open(file_path, "rt") as f:
-    file_content = f.read()
- 
-dssp = dssp(file_content)
- 
-print("residues: ", dssp.statistics.residues)
-
-for res in dssp:
-    print(res.asym_id, res.seq_id, res.compound_id, res.type)
+# Accessing DSSP data
+for d in dssps:
+    print(f"Residue {d.resnum}: {d.aa} - {d.ss}")
 
 ```
 
-Usage
------
+## Running Tests
 
-See [manual page](doc/mkdssp.md) for more info. Or even better, see the [DSSP website](https://pdb-redo.eu/dssp).
+To ensure the reliability and correctness of the `dsspy` package, a comprehensive test suite is provided. To run the tests, use the following command:
+
+```console
+poetry run pytest
+```
+
+This will execute the test suite and provide a coverage report.
+
+## Legacy C++ Version
+
+The original C++ version of `mkdssp` has been moved to the `cpp_legacy` directory. If you need to access or build the C++ code, please refer to the `README.md` file in that directory for instructions.
