@@ -1,5 +1,5 @@
-from core import StructureType, HelixType, HelixPositionType
-from algorithm import calculate_pp_helices
+from dsspy.core import StructureType, HelixType, HelixPositionType
+from dsspy.algorithm import calculate_pp_helices
 
 class MockResidue:
     def __init__(self, phi, psi):
