@@ -9,7 +9,6 @@ poetry-install: dev-install
 
 dev-install: build
 	poetry install
-	chmod +x build/bin/mkdssp
 
 run-tests:
 	PYTHONPATH=. poetry run pytest --cov=dsspy --cov-report=term-missing
