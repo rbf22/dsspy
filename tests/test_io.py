@@ -2,6 +2,7 @@ import os
 import gzip
 from io import StringIO
 from dsspy.io import read_pdb, read_cif
+from dsspy.core import Residue
 
 def test_read_pdb():
     """
@@ -25,14 +26,12 @@ def test_read_pdb():
 
     # The PDBParser can take a file-like object.
     pdb_file_like = StringIO(pdb_content)
-    structure = read_pdb(pdb_file_like)
+    residues = read_pdb(pdb_file_like)
 
-    assert structure is not None
-    assert structure.id == "protein"
-    # Add more assertions about the structure.
-    assert len(list(structure.get_models())) == 1
-    model = next(structure.get_models())
-    assert len(list(model.get_chains())) > 0
+    assert isinstance(residues, list)
+    assert len(residues) > 0
+    assert all(isinstance(r, Residue) for r in residues)
+
 
 def test_read_cif():
     """
@@ -48,10 +47,8 @@ def test_read_cif():
         cif_content = f.read()
 
     cif_file_like = StringIO(cif_content)
-    structure = read_cif(cif_file_like)
+    residues = read_cif(cif_file_like)
 
-    assert structure is not None
-    assert structure.id == "protein"
-    assert len(list(structure.get_models())) == 1
-    model = next(structure.get_models())
-    assert len(list(model.get_chains())) > 0
+    assert isinstance(residues, list)
+    assert len(residues) > 0
+    assert all(isinstance(r, Residue) for r in residues)
