@@ -12,7 +12,7 @@ dev-install:
 	poetry install
 
 run-tests:
-	PYTHONPATH=. poetry run pytest --cov=dsspy --cov-report=term-missing
+	poetry run pytest --cov=dsspy --cov-report=term-missing
 
 run-linter:
 	poetry run ruff check .
