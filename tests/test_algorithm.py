@@ -1,7 +1,11 @@
 import numpy as np
 import pytest
-from dsspy.algorithm import dihedral_angle
+from dsspy.algorithm import dihedral_angle, calculate_accessibility
 from Bio.PDB.vectors import Vector, calc_dihedral
+import gzip
+import re
+from dsspy.io import read_cif
+
 
 def test_dihedral_angle_trans():
     """
@@ -220,3 +224,110 @@ def test_dihedral_angle_gauche():
     assert dsspy_angle == pytest.approx(expected_angle, abs=1e-3)
     assert biopython_angle == pytest.approx(expected_angle, abs=1e-3)
     assert dsspy_angle == pytest.approx(biopython_angle, abs=1e-3)
+
+
+
+def parse_reference_accessibility(filepath):
+    """
+    Parses a reference DSSP file in mmCIF format to extract accessibility values.
+    Returns a dictionary where keys are residue numbers and values are the accessibility.
+    """
+    accessibilities = {}
+    with open(filepath, 'r') as f:
+        lines = f.readlines()
+
+    in_summary_loop = False
+    seq_id_index = -1
+    accessibility_index = -1
+    header_count = 0
+
+    for line in lines:
+        line = line.strip()
+        if line.startswith('loop_'):
+            in_summary_loop = False # Reset on new loop
+            header_count = 0
+        elif line.startswith('_dssp_struct_summary.'):
+            in_summary_loop = True
+            if 'label_seq_id' in line:
+                seq_id_index = header_count
+            elif 'accessibility' in line:
+                accessibility_index = header_count
+            header_count += 1
+        elif in_summary_loop and not line.startswith('#'):
+            if line.startswith('loop_'): # Should not happen with the new file
+                in_summary_loop = False
+                continue
+
+            parts = re.split(r'\s+', line)
+            if len(parts) > max(seq_id_index, accessibility_index):
+                res_num_str = parts[seq_id_index]
+                acc_str = parts[accessibility_index]
+                if acc_str != '.' and acc_str != '?':
+                    accessibilities[int(res_num_str)] = float(acc_str)
+        elif not line.startswith('_'):
+             header_count = 0
+
+
+    return accessibilities
+
+def test_calculate_accessibility_comparative():
+    """
+    Tests the calculate_accessibility function by comparing its output to a
+    reference DSSP file.
+    """
+    # 1. Run dsspy's accessibility calculation
+    with open('cpp_legacy/test/1cbs.cif', 'rt') as f:
+        residues = read_cif(f)
+    calculate_accessibility(residues)
+
+    # 2. Parse the reference DSSP file
+    reference_accessibilities = parse_reference_accessibility('tests/1cbs_accessibility.dssp')
+
+    # 3. Compare the results
+    for res in residues:
+        if res.number in reference_accessibilities:
+            ref_acc = reference_accessibilities[res.number]
+            # It seems the accessibility is an integer in the reference file, but a float in our calculation.
+            # Let's round our result for comparison.
+            calculated_acc = round(res.accessibility)
+            assert calculated_acc == pytest.approx(ref_acc, abs=1)
+
+
+from dsspy.core import StructureType, HelixType, HelixPositionType
+from dsspy.algorithm import calculate_pp_helices
+
+class MockResidue:
+    def __init__(self, phi, psi):
+        self.phi = phi
+        self.psi = psi
+        self.secondary_structure = StructureType.LOOP
+        self.helix_flags = {helix_type: HelixPositionType.NONE for helix_type in HelixType}
+
+def test_calculate_pp_helices():
+    """
+    Tests the calculate_pp_helices function with the C++ ported logic.
+    """
+    # Create a list of mock residues with phi/psi angles for a PPII helix
+    residues = [MockResidue(-75, 145) for _ in range(7)]
+    residues[0].phi = 0 # Not in helix
+    residues[6].phi = 0 # Not in helix
+
+    calculate_pp_helices(residues, stretch_length=3)
+
+    # Expected state based on the quirky C++ loop (for i in 1..n-4):
+    # N, S, M, M, M, E, N
+    assert residues[0].helix_flags[HelixType.PP] == HelixPositionType.NONE
+    assert residues[1].helix_flags[HelixType.PP] == HelixPositionType.START
+    assert residues[2].helix_flags[HelixType.PP] == HelixPositionType.MIDDLE
+    assert residues[3].helix_flags[HelixType.PP] == HelixPositionType.MIDDLE
+    assert residues[4].helix_flags[HelixType.PP] == HelixPositionType.MIDDLE
+    assert residues[5].helix_flags[HelixType.PP] == HelixPositionType.END
+    assert residues[6].helix_flags[HelixType.PP] == HelixPositionType.NONE
+
+    assert residues[0].secondary_structure == StructureType.LOOP
+    assert residues[1].secondary_structure == StructureType.HELIX_PPII
+    assert residues[2].secondary_structure == StructureType.HELIX_PPII
+    assert residues[3].secondary_structure == StructureType.HELIX_PPII
+    assert residues[4].secondary_structure == StructureType.HELIX_PPII
+    assert residues[5].secondary_structure == StructureType.HELIX_PPII
+    assert residues[6].secondary_structure == StructureType.LOOP

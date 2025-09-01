@@ -4,7 +4,7 @@ version = "0.1.0"
 description = "A Python implementation of the DSSP algorithm for secondary structure assignment of proteins."
 authors = ["Your Name <you@example.com>"]
 readme = "README.md"
-packages = [{include = "dsspy", from = "src"}]
+packages = [{include = "dsspy"}]
 
 [tool.poetry.dependencies]
 python = ">=3.11,<3.13"
