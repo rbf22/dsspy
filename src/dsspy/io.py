@@ -1,5 +1,5 @@
 from Bio.PDB import PDBParser, MMCIFParser
-from core import Residue, ChainBreakType
+from .core import Residue, ChainBreakType
 
 def extract_residues(structure):
     """
