@@ -1,9 +1,14 @@
+"""
+This module handles reading of PDB and mmCIF files.
+"""
+
 from Bio.PDB import PDBParser, MMCIFParser
 from .core import Residue, ChainBreakType
 
 def extract_residues(structure):
     """
-    Extracts residues from a Biopython structure object and returns a list of dsspy.core.Residue objects.
+    Extracts residues from a Biopython structure object and returns a list of
+    dsspy.core.Residue objects.
     """
     residues = []
     res_number = 0
@@ -18,7 +23,8 @@ def extract_residues(structure):
                     continue
 
                 # In C++, there's a check for completeness, let's ensure the backbone atoms are present
-                if not ('N' in residue and 'CA' in residue and 'C' in residue and 'O' in residue):
+                if not ('N' in residue and 'CA' in residue and 'C' in residue and 'O'
+                          in residue):
                     continue
 
                 res_number += 1
@@ -30,9 +36,11 @@ def extract_residues(structure):
                     # Check for chain gap
                     c_atom = prev_res.biopython_residue['C']
                     n_atom = dssp_res.biopython_residue['N']
-                    if c_atom - n_atom > 2.5: # Peptide bond length is ~1.33A, 2.5A is a safe threshold
+                    # Peptide bond length is ~1.33A, 2.5A is a safe threshold
+                    if c_atom - n_atom > 2.5:
                         dssp_res.chain_break = ChainBreakType.GAP
-                        res_number +=1 # In C++ code, the res number is incremented on a gap
+                        # In C++ code, the res number is incremented on a gap
+                        res_number += 1
 
                     prev_res.next_residue = dssp_res
                     dssp_res.prev_residue = prev_res

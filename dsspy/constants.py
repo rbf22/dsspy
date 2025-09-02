@@ -1,4 +1,6 @@
-# This file contains constants used in the dsspy library.
+"""
+This file contains constants used in the dsspy library.
+"""
 
 # Constants from the C++ implementation
 RADIUS_N = 1.65

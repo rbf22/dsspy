@@ -1,3 +1,7 @@
+"""
+Geometric calculations for DSSP.
+"""
+
 import numpy as np
 
 
@@ -6,13 +10,13 @@ def _generate_fibonacci_sphere(n_points: int):
     Generates a sphere of approximately evenly distributed points using the
     Fibonacci sphere algorithm - matching the C++ implementation.
     """
-    P = 2 * n_points + 1
+    p_value = 2 * n_points + 1
     golden_ratio = (1 + np.sqrt(5.0)) / 2
-    weight = (4 * np.pi) / P
+    weight = (4 * np.pi) / p_value
 
     points = []
     for i in range(-n_points, n_points + 1):
-        lat = np.arcsin((2.0 * i) / P)
+        lat = np.arcsin((2.0 * i) / p_value)
         lon = (i % golden_ratio) * 2 * np.pi / golden_ratio
 
         points.append([
