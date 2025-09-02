@@ -1,7 +1,5 @@
-import numpy as np
 import pytest
 import gzip
-import re
 from dsspy.io import read_cif
 from dsspy.hbond import calculate_h_bonds
 
@@ -96,9 +94,6 @@ def test_calculate_h_bonds_comparative():
     with gzip.open('test/reference_data/1cbs.cif.gz', 'rt') as f:
         residues, _ = read_cif(f)
     calculate_h_bonds(residues)
-
-    # Create a map of residue number to residue object for easy lookup
-    res_map = {res.id: res for res in residues}
 
     # 2. Parse the reference DSSP file
     reference_hbonds = parse_reference_dssp('test/reference_data/1cbs-dssp.cif')

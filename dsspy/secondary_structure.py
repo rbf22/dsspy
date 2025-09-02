@@ -1,4 +1,16 @@
-from .core import Residue, Bridge, BridgeType, StructureType, BridgePartner, HelixPositionType, HelixType
+"""
+This module contains functions for calculating secondary structure elements
+like beta sheets and helices.
+"""
+from .core import (
+    Residue,
+    Bridge,
+    BridgeType,
+    StructureType,
+    BridgePartner,
+    HelixPositionType,
+    HelixType,
+)
 
 
 def calculate_beta_sheets(residues: list[Residue]):
@@ -6,14 +18,14 @@ def calculate_beta_sheets(residues: list[Residue]):
     Calculates beta sheets, ladders, and bridges from H-bond patterns.
     This is a Python port of the `CalculateBetaSheets` function from the C++ dssp implementation.
     """
-    MAX_HBOND_ENERGY = -0.5
+    max_hbond_energy = -0.5
 
     def _test_bond(res1, res2):
         """Checks if res1 has an H-bond to res2."""
         if res1 is None or res2 is None:
             return False
         for hbond in res1.hbond_acceptor:
-            if hbond.residue == res2 and hbond.energy < MAX_HBOND_ENERGY:
+            if hbond.residue == res2 and hbond.energy < max_hbond_energy:
                 return True
         return False
 
@@ -38,8 +50,12 @@ def calculate_beta_sheets(residues: list[Residue]):
         Tests for a parallel or anti-parallel bridge between res1 and res2.
         This is a port of the `TestBridge` function from the C++ dssp implementation.
         """
-        a = res1.prev_residue; b = res1; c = res1.next_residue
-        d = res2.prev_residue; e = res2; f = res2.next_residue
+        a = res1.prev_residue
+        b = res1
+        c = res1.next_residue
+        d = res2.prev_residue
+        e = res2
+        f = res2.next_residue
 
         if not (a and c and _no_chain_break(a, c) and d and f and _no_chain_break(d, f)):
             return BridgeType.NONE
@@ -56,9 +72,8 @@ def calculate_beta_sheets(residues: list[Residue]):
 
     # 1. Find initial bridges
     bridges = []
-    for i in range(len(residues)):
+    for i, res1 in enumerate(residues):
         for j in range(i + 1, len(residues)):
-            res1 = residues[i]
             res2 = residues[j]
 
             # Residues in a bridge must be separated by at least 2
@@ -157,15 +172,13 @@ def calculate_beta_sheets(residues: list[Residue]):
         beta_j = 1 if bridge.j[0].beta_partner[0].residue is not None else 0
 
         if bridge.type == BridgeType.PARALLEL:
-            for k in range(len(bridge.i)):
-                res_i = bridge.i[k]
+            for k, res_i in enumerate(bridge.i):
                 res_j = bridge.j[k]
                 res_i.beta_partner[beta_i] = BridgePartner(res_j, bridge.ladder, True)
                 res_j.beta_partner[beta_j] = BridgePartner(res_i, bridge.ladder, True)
-        else: # Antiparallel
-            for k in range(len(bridge.i)):
-                res_i = bridge.i[k]
-                res_j = bridge.j[-(k+1)]
+        else:  # Antiparallel
+            for k, res_i in enumerate(bridge.i):
+                res_j = bridge.j[-(k + 1)]
                 res_i.beta_partner[beta_i] = BridgePartner(res_j, bridge.ladder, False)
                 res_j.beta_partner[beta_j] = BridgePartner(res_i, bridge.ladder, False)
 
@@ -222,8 +235,8 @@ def calculate_pp_helices(residues: list[Residue], stretch_length: int = 3):
                     if res.helix_flags[HelixType.PP] == HelixPositionType.NONE:
                         res.helix_flags[HelixType.PP] = HelixPositionType.START
                     elif res.helix_flags[HelixType.PP] == HelixPositionType.END:
-                         res.helix_flags[HelixType.PP] = HelixPositionType.START_AND_END
-                elif j == stretch_length - 1: # End of the helix
+                        res.helix_flags[HelixType.PP] = HelixPositionType.START_AND_END
+                elif j == stretch_length - 1:  # End of the helix
                     res.helix_flags[HelixType.PP] = HelixPositionType.END
                 else: # Middle of the helix
                     res.helix_flags[HelixType.PP] = HelixPositionType.MIDDLE

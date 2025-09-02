@@ -1,4 +1,4 @@
-from mkdssp import dssp, TestBond, helix_type, chain_break_type, helix_type, helix_position_type, structure_type
+from mkdssp import dssp, TestBond, chain_break_type, helix_type, helix_position_type, structure_type
 import gzip
 import unittest
 

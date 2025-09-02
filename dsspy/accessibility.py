@@ -1,7 +1,17 @@
+"""
+This module contains functions for calculating solvent accessibility of residues.
+"""
 import numpy as np
 
 from .core import Residue
-from .constants import RADIUS_N, RADIUS_CA, RADIUS_C, RADIUS_O, RADIUS_SIDE_ATOM, RADIUS_WATER
+from .constants import (
+    RADIUS_N,
+    RADIUS_CA,
+    RADIUS_C,
+    RADIUS_O,
+    RADIUS_SIDE_ATOM,
+    RADIUS_WATER,
+)
 from .geometry import _generate_fibonacci_sphere
 
 
@@ -13,21 +23,28 @@ def _get_atom_spec(residue: Residue):
     yield residue.o_coord, RADIUS_O
     for atom in residue.biopython_residue:
         if atom.get_name() not in ["N", "CA", "C", "O", "H"]:
-            # In the C++ code, all side chain atoms that are not H are treated with a generic radius.
+            # In the C++ code, all side chain atoms that are not H are treated
+            # with a generic radius.
             yield atom.get_coord(), RADIUS_SIDE_ATOM
 
 
-def _atom_intersects_box(atom_coord: np.ndarray, atom_radius: float, box_min: np.ndarray, box_max: np.ndarray) -> bool:
+def _atom_intersects_box(
+    atom_coord: np.ndarray, atom_radius: float, box_min: np.ndarray, box_max: np.ndarray
+) -> bool:
     """Check if an atom intersects with a bounding box."""
-    return (atom_coord[0] + atom_radius >= box_min[0] and
-            atom_coord[0] - atom_radius <= box_max[0] and
-            atom_coord[1] + atom_radius >= box_min[1] and
-            atom_coord[1] - atom_radius <= box_max[1] and
-            atom_coord[2] + atom_radius >= box_min[2] and
-            atom_coord[2] - atom_radius <= box_max[2])
+    return (
+        box_min[0] <= atom_coord[0] + atom_radius
+        and box_max[0] >= atom_coord[0] - atom_radius
+        and box_min[1] <= atom_coord[1] + atom_radius
+        and box_max[1] >= atom_coord[1] - atom_radius
+        and box_min[2] <= atom_coord[2] + atom_radius
+        and box_max[2] >= atom_coord[2] - atom_radius
+    )
 
 
-def _calculate_residue_bounding_box(residue: Residue, water_radius: float = RADIUS_WATER):
+def _calculate_residue_bounding_box(
+    residue: Residue, water_radius: float = RADIUS_WATER
+):
     """Calculate bounding box for a residue, matching C++ ExtendBox logic."""
     box_min = np.array([np.inf, np.inf, np.inf])
     box_max = np.array([-np.inf, -np.inf, -np.inf])
@@ -43,15 +60,19 @@ def _calculate_residue_bounding_box(residue: Residue, water_radius: float = RADI
 
 class Candidate:
     """Matches the C++ accumulator::candidate structure."""
+
     def __init__(self, location: np.ndarray, radius_sq: float, distance_sq: float):
         self.location = location
         self.radius_sq = radius_sq  # radius squared for efficiency
         self.distance_sq = distance_sq
 
 
-def _accumulate_occluding_atoms(atom_coord: np.ndarray, atom_radius: float,
-                               neighboring_residues: list[Residue],
-                               water_radius: float = RADIUS_WATER) -> list[Candidate]:
+def _accumulate_occluding_atoms(
+    atom_coord: np.ndarray,
+    atom_radius: float,
+    neighboring_residues: list[Residue],
+    water_radius: float = RADIUS_WATER,
+) -> list[Candidate]:
     """
     Accumulate occluding atoms, matching the C++ accumulator logic.
     """
@@ -72,11 +93,11 @@ def _accumulate_occluding_atoms(atom_coord: np.ndarray, atom_radius: float,
                 test_radius = d_with_water + r_with_water
                 test_sq = test_radius * test_radius
 
-                if distance_sq < test_sq and distance_sq > 0.0001:
+                if 0.0001 < distance_sq < test_sq:
                     candidate = Candidate(
                         location=occ_coord - atom_coord,
                         radius_sq=r_with_water * r_with_water,
-                        distance_sq=distance_sq
+                        distance_sq=distance_sq,
                     )
                     candidates.append(candidate)
 
@@ -97,12 +118,17 @@ def calculate_accessibility(
     """
     sphere_points, weight = _generate_fibonacci_sphere(n_sphere_points)
 
-    for i, residue in enumerate(residues):
+    for residue in residues:
         # Calculate accessibility for the current residue
         total_accessibility = 0.0
         for atom_coord, atom_radius in _get_atom_spec(residue):
             total_accessibility += _calculate_atom_accessibility(
-                atom_coord, atom_radius, residues, sphere_points, weight, water_radius
+                atom_coord,
+                atom_radius,
+                residues,
+                sphere_points,
+                weight,
+                water_radius,
             )
         residue.accessibility = total_accessibility
 
