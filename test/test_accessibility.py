@@ -53,7 +53,7 @@ def test_calculate_accessibility_comparative():
     """
     # 1. Run dsspy's accessibility calculation
     with open('test/reference_data/1cbs.cif', 'rt') as f:
-        residues = read_cif(f)
+        residues, _ = read_cif(f)
     calculate_accessibility(residues)
 
     # 2. Parse the reference DSSP file
