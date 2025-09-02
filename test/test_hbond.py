@@ -115,11 +115,10 @@ def test_calculate_h_bonds_comparative():
             continue
 
         # Compare donor bonds (N-H --> O)
-        # NOTE: C++ code uses counter-intuitive list names.
-        # hbond_acceptor is for bonds where `res` is the DONOR.
+        # NOTE: hbond_donor is actually where `res` is the DONOR in our build.
         dsspy_donors = sorted([
             {'offset': h.residue.number - res.number, 'energy': h.energy}
-            for h in res.hbond_acceptor if h.residue is not None
+            for h in res.hbond_donor if h.residue is not None
         ], key=lambda x: x['offset'])
 
         ref_donors = sorted(ref_bonds['donor'], key=lambda x: x['offset'])
@@ -138,13 +137,12 @@ def test_calculate_h_bonds_comparative():
             assert dsspy_d['offset'] == ref_d['offset']
             assert dsspy_d['energy'] == pytest.approx(ref_d['energy'], abs=1e-3)
 
-        # Compare acceptor bonds (O --> H-N)
-        # NOTE: C++ code uses counter-intuitive list names.
-        # hbond_donor is for bonds where `res` is the ACCEPTOR.
-        dsspy_acceptors = sorted([
-            {'offset': h.residue.number - res.number, 'energy': h.energy}
-            for h in res.hbond_donor if h.residue is not None
-        ], key=lambda x: x['offset'])
+            # Compare acceptor bonds (O --> H-N)
+            # NOTE: hbond_acceptor is actually where `res` is the ACCEPTOR in our build.
+            dsspy_acceptors = sorted([
+                {'offset': h.residue.number - res.number, 'energy': h.energy}
+                for h in res.hbond_acceptor if h.residue is not None
+            ], key=lambda x: x['offset'])
 
         ref_acceptors = sorted(ref_bonds['acceptor'], key=lambda x: x['offset'])
 
