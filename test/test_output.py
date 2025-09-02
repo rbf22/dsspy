@@ -1,7 +1,8 @@
 import pytest
 from dsspy.output import _format_header, format_dssp_line, write_dssp
 from dsspy.io import read_cif
-from dsspy.algorithm import calculate_h_bonds, calculate_beta_sheets
+from dsspy.hbond import calculate_h_bonds
+from dsspy.secondary_structure import calculate_beta_sheets
 from Bio.PDB.Structure import Structure
 from Bio.PDB.Model import Model
 from Bio.PDB.Chain import Chain
