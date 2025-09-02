@@ -65,7 +65,7 @@ def parse_reference_dssp(filepath):
 
     return hbonds
 
-@pytest.mark.skip(reason="H-bond calculation is not correct yet")
+
 def test_calculate_h_bonds_comparative():
     """
     Tests the calculate_h_bonds function by comparing its output to a
