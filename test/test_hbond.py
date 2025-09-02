@@ -80,7 +80,7 @@ def test_calculate_h_bonds_comparative():
     res_map = {res.id: res for res in residues}
 
     # 2. Parse the reference DSSP file
-    reference_hbonds = parse_reference_dssp('test/reference.dssp')
+    reference_hbonds = parse_reference_dssp('test/reference_data/1cbs.dssp')
 
     # 3. Compare the results
     assert len(residues) == len(reference_hbonds)
