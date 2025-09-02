@@ -130,7 +130,7 @@ def test_calculate_h_bonds_comparative():
     reference DSSP file.
     """
     # 1. Run dsspy's H-bond calculation
-    with gzip.open('cpp_legacy/test/1cbs.cif.gz', 'rt') as f:
+    with gzip.open('test/reference_data/1cbs.cif.gz', 'rt') as f:
         residues = read_cif(f)
     calculate_h_bonds(residues)
 
@@ -138,7 +138,7 @@ def test_calculate_h_bonds_comparative():
     res_map = {res.id: res for res in residues}
 
     # 2. Parse the reference DSSP file
-    reference_hbonds = parse_reference_dssp('tests/reference.dssp')
+    reference_hbonds = parse_reference_dssp('test/reference.dssp')
 
     # 3. Compare the results
     assert len(residues) == len(reference_hbonds)
@@ -276,12 +276,12 @@ def test_calculate_accessibility_comparative():
     reference DSSP file.
     """
     # 1. Run dsspy's accessibility calculation
-    with open('cpp_legacy/test/1cbs.cif', 'rt') as f:
+    with open('test/reference_data/1cbs.cif', 'rt') as f:
         residues = read_cif(f)
     calculate_accessibility(residues)
 
     # 2. Parse the reference DSSP file
-    reference_accessibilities = parse_reference_accessibility('tests/1cbs_accessibility.dssp')
+    reference_accessibilities = parse_reference_accessibility('test/reference_data/1cbs_accessibility.dssp')
 
     # 3. Compare the results
     for res in residues:
