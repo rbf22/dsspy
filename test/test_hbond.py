@@ -1,16 +1,24 @@
-import pytest
+"""
+Tests for H-bond calculation.
+"""
+
 import gzip
+import pytest
 from dsspy.io import read_cif
 from dsspy.hbond import calculate_h_bonds
 
 
 def parse_reference_dssp(filepath):
+    """
+    Parses a reference DSSP file in mmCIF format to extract H-bond information.
+    """
+    # pylint: disable=too-many-branches
     hbonds = {}
     in_loop = False
     columns = []
     col_indices = {}
 
-    with open(filepath, 'r') as f:
+    with open(filepath, 'r', encoding='utf-8') as f:
         for line in f:
             line = line.strip()
             if not line:
@@ -43,7 +51,7 @@ def parse_reference_dssp(filepath):
 
                 try:
                     res_num = int(fields[col_indices['label_seq_id']])
-                except Exception:
+                except (ValueError, KeyError, IndexError):
                     continue
 
                 if res_num not in hbonds:
@@ -63,7 +71,7 @@ def parse_reference_dssp(filepath):
                                 'offset': offset,
                                 'energy': float(energy)
                             })
-                    except Exception:
+                    except (ValueError, KeyError, IndexError):
                         pass
 
                 # donors
@@ -80,7 +88,7 @@ def parse_reference_dssp(filepath):
                                 'offset': offset,
                                 'energy': float(energy)
                             })
-                    except Exception:
+                    except (ValueError, KeyError, IndexError):
                         pass
 
     return hbonds
@@ -96,7 +104,8 @@ def test_calculate_h_bonds_comparative():
     calculate_h_bonds(residues)
 
     # 2. Parse the reference DSSP file
-    reference_hbonds = parse_reference_dssp('test/reference_data/1cbs-dssp.cif')
+    reference_hbonds = parse_reference_dssp(
+        'test/reference_data/1cbs-dssp.cif')
 
     # 3. Compare the results
     assert len(residues) == len(reference_hbonds)

@@ -1,6 +1,7 @@
 """
 This module contains functions for calculating solvent accessibility of residues.
 """
+from dataclasses import dataclass
 import numpy as np
 
 from .core import Residue
@@ -58,9 +59,16 @@ def _calculate_residue_bounding_box(
     return box_min, box_max
 
 
+@dataclass
+class Sphere:
+    """Represents a sphere of points for accessibility calculation."""
+    points: np.ndarray
+    weight: float
+
+
 class Candidate:
     """Matches the C++ accumulator::candidate structure."""
-
+    # pylint: disable=too-few-public-methods
     def __init__(self, location: np.ndarray, radius_sq: float, distance_sq: float):
         self.location = location
         self.radius_sq = radius_sq  # radius squared for efficiency
@@ -76,6 +84,7 @@ def _accumulate_occluding_atoms(
     """
     Accumulate occluding atoms, matching the C++ accumulator logic.
     """
+    # pylint: disable=too-many-locals
     candidates = []
     d_with_water = atom_radius + water_radius
 
@@ -117,6 +126,7 @@ def calculate_accessibility(
     Now matches C++ implementation more closely.
     """
     sphere_points, weight = _generate_fibonacci_sphere(n_sphere_points)
+    sphere = Sphere(points=sphere_points, weight=weight)
 
     for residue in residues:
         # Calculate accessibility for the current residue
@@ -126,8 +136,7 @@ def calculate_accessibility(
                 atom_coord,
                 atom_radius,
                 residues,
-                sphere_points,
-                weight,
+                sphere,
                 water_radius,
             )
         residue.accessibility = total_accessibility
@@ -137,8 +146,7 @@ def _calculate_atom_accessibility(
     atom_coord: np.ndarray,
     atom_radius: float,
     all_residues: list[Residue],
-    sphere_points: np.ndarray,
-    weight: float,
+    sphere: Sphere,
     water_radius: float,
 ) -> float:
     """Calculates the solvent accessible surface area for a single atom - C++ compatible."""
@@ -150,7 +158,7 @@ def _calculate_atom_accessibility(
     surface = 0.0
 
     # Generate test points on the sphere surface
-    test_points = atom_coord + sphere_points * radius
+    test_points = atom_coord + sphere.points * radius
 
     for test_point in test_points:
         is_accessible = True
@@ -165,7 +173,7 @@ def _calculate_atom_accessibility(
                 break
 
         if is_accessible:
-            surface += weight
+            surface += sphere.weight
 
     # Return surface area (weight already accounts for point density)
     return surface * radius * radius

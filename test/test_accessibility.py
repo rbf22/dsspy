@@ -1,5 +1,9 @@
-import pytest
+"""
+Tests for accessibility calculation.
+"""
+
 import re
+import pytest
 from dsspy.io import read_cif
 from dsspy.accessibility import calculate_accessibility
 
@@ -10,7 +14,7 @@ def parse_reference_accessibility(filepath):
     Returns a dictionary where keys are residue numbers and values are the accessibility.
     """
     accessibilities = {}
-    with open(filepath, 'r') as f:
+    with open(filepath, 'r', encoding='utf-8') as f:
         lines = f.readlines()
 
     in_summary_loop = False
@@ -51,12 +55,14 @@ def test_calculate_accessibility_comparative():
     reference DSSP file.
     """
     # 1. Run dsspy's accessibility calculation
-    with open('test/reference_data/1cbs.cif', 'rt') as f:
+    with open('test/reference_data/1cbs.cif', 'rt', encoding='utf-8') as f:
         residues, _ = read_cif(f)
     calculate_accessibility(residues)
 
     # 2. Parse the reference DSSP file
-    reference_accessibilities = parse_reference_accessibility('test/reference_data/1cbs-dssp.cif')
+    reference_accessibilities = parse_reference_accessibility(
+        'test/reference_data/1cbs-dssp.cif'
+    )
 
     # 3. Compare the results
     for res in residues:

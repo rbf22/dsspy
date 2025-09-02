@@ -18,6 +18,7 @@ def calculate_beta_sheets(residues: list[Residue]):
     Calculates beta sheets, ladders, and bridges from H-bond patterns.
     This is a Python port of the `CalculateBetaSheets` function from the C++ dssp implementation.
     """
+    # pylint: disable=too-many-locals,too-many-branches,too-many-statements
     max_hbond_energy = -0.5
 
     def _test_bond(res1, res2):
