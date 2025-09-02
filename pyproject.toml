@@ -1,8 +1,8 @@
 [tool.poetry]
 name = "dsspy"
-version = "0.1.0"
+version = "1.0.0"
 description = "A Python implementation of the DSSP algorithm for secondary structure assignment of proteins."
-authors = ["Your Name <you@example.com>"]
+authors = ["Robert Fenwick"]
 readme = "README.md"
 packages = [{include = "dsspy"}]
 
@@ -25,4 +25,3 @@ build-backend = "poetry.core.masonry.api"
 
 [tool.deptry]
 extend_exclude = ["test"]
-per_rule_ignores = {DEP001 = ["mkdssp"]}
