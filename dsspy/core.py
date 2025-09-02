@@ -21,7 +21,7 @@ class StructureType(Enum):
 
 class HelixType(Enum):
     """Helix types."""
-    _3_10 = 0
+    THREE_TEN = 0
     ALPHA = 1
     PI = 2
     PP = 3
@@ -46,6 +46,7 @@ class ChainBreakType(Enum):
 
 class HBond:
     """Represents a hydrogen bond."""
+    # pylint: disable=too-few-public-methods
     def __init__(self, residue, energy):
         self.residue = residue
         self.energy = energy

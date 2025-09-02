@@ -22,9 +22,9 @@ def extract_residues(structure):
                 if residue.get_id()[0] != ' ':
                     continue
 
-                # In C++, there's a check for completeness, let's ensure the backbone atoms are present
-                if not ('N' in residue and 'CA' in residue and 'C' in residue and 'O'
-                          in residue):
+                # In C++, there's a check for completeness, let's ensure the
+                # backbone atoms are present
+                if not ('N' in residue and 'CA' in residue and 'C' in residue and 'O' in residue):
                     continue
 
                 res_number += 1
