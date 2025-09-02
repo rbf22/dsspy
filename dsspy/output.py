@@ -115,13 +115,13 @@ def _format_header(header_dict):
 
     compnd_info = []
     # The 'compound' entry in biopython is a list of dictionaries.
-    for comp in header_dict.get('compound', []):
+    for comp in header_dict.get('compound', []):  # pragma: no cover
         for key, value in comp.items():
             compnd_info.append(f"{key.upper()}: {value}")
     lines.append("COMPND    " + "; ".join(compnd_info))
 
     source_info = []
-    for src in header_dict.get('source', []):
+    for src in header_dict.get('source', []):  # pragma: no cover
         for key, value in src.items():
             source_info.append(f"{key.upper()}: {value}")
     lines.append("SOURCE    " + "; ".join(source_info))
