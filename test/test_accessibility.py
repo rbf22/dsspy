@@ -2,7 +2,8 @@ import gzip
 import pytest
 import re
 from dsspy.io import read_cif
-from dsspy.algorithm import calculate_accessibility
+from dsspy.accessibility import calculate_accessibility
+
 
 def parse_reference_accessibility(filepath):
     """
@@ -22,6 +23,7 @@ def parse_reference_accessibility(filepath):
         line = line.strip()
         if line.startswith('loop_'):
             in_summary_loop = False # Reset on new loop
+            header_count = 0
         elif line.startswith('_dssp_struct_summary.'):
             in_summary_loop = True
             if 'label_seq_id' in line:
@@ -30,7 +32,7 @@ def parse_reference_accessibility(filepath):
                 accessibility_index = header_count
             header_count += 1
         elif in_summary_loop and not line.startswith('#'):
-            if line.startswith('loop_'):
+            if line.startswith('loop_'): # Should not happen with the new file
                 in_summary_loop = False
                 continue
 
@@ -38,7 +40,7 @@ def parse_reference_accessibility(filepath):
             if len(parts) > max(seq_id_index, accessibility_index):
                 res_num_str = parts[seq_id_index]
                 acc_str = parts[accessibility_index]
-                if acc_str != '.':
+                if acc_str != '.' and acc_str != '?':
                     accessibilities[int(res_num_str)] = float(acc_str)
         elif not line.startswith('_'):
              header_count = 0
