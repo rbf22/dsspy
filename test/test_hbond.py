@@ -8,61 +8,127 @@ from dsspy.hbond import calculate_h_bonds
 
 def parse_reference_dssp(filepath):
     """
-    Parses a reference DSSP file to extract H-bond information.
+    Parses a reference DSSP CIF file to extract H-bond information.
     Returns a dictionary where keys are residue numbers and values are
     dictionaries containing 'donor' and 'acceptor' H-bond lists.
     """
     hbonds = {}
+    
     with open(filepath, 'r') as f:
-        lines = f.readlines()
-
-    # Find the start of the residue data
-    data_start_index = -1
-    for i, line in enumerate(lines):
-        if line.strip().startswith('#  RESIDUE AA STRUCTURE'):
-            data_start_index = i + 1
-            break
-
-    if data_start_index == -1:
-        raise ValueError("Could not find data section in reference DSSP file")
-
-    for line in lines[data_start_index:]:
-        if len(line) < 100: # Skip malformed or summary lines
+        content = f.read()
+    
+    # Find the _dssp_struct_bridge_pairs loop
+    bridge_pairs_pattern = r'loop_\s+_dssp_struct_bridge_pairs\..*?\n(.*?)(?=\n#|\nloop_|\n_|\ndata_|\Z)'
+    match = re.search(bridge_pairs_pattern, content, re.DOTALL)
+    
+    if not match:
+        raise ValueError("Could not find _dssp_struct_bridge_pairs table in CIF file")
+    
+    # Extract the header to understand column positions
+    header_pattern = r'loop_\s+((?:_dssp_struct_bridge_pairs\.\w+\s*\n)+)'
+    header_match = re.search(header_pattern, content)
+    
+    if not header_match:
+        raise ValueError("Could not parse _dssp_struct_bridge_pairs header")
+    
+    # Parse column names
+    column_lines = header_match.group(1).strip().split('\n')
+    columns = [line.strip().replace('_dssp_struct_bridge_pairs.', '') for line in column_lines]
+    
+    # Create column index mapping
+    col_indices = {col: i for i, col in enumerate(columns)}
+    
+    # Required columns
+    required_cols = ['label_seq_id', 'acceptor_1_label_seq_id', 'acceptor_1_energy', 
+                    'acceptor_2_label_seq_id', 'acceptor_2_energy', 
+                    'donor_1_label_seq_id', 'donor_1_energy', 
+                    'donor_2_label_seq_id', 'donor_2_energy']
+    
+    for col in required_cols:
+        if col not in col_indices:
+            raise ValueError(f"Required column {col} not found in CIF file")
+    
+    # Parse the data lines
+    data_section = match.group(1).strip()
+    data_lines = [line.strip() for line in data_section.split('\n') if line.strip() and not line.strip().startswith('#')]
+    
+    for line in data_lines:
+        if not line:
             continue
-
-        res_num = int(line[0:5].strip())
-        hbonds[res_num] = {'donor': [], 'acceptor': []}
-
-        # Extract H-bonds
-        # N-H-->O (donor) columns are at indices 38 and 50
-        # O-->H-N (acceptor) columns are at indices 62 and 74
-        donor1_str = line[38:49].strip()
-        donor2_str = line[50:61].strip()
-        acceptor1_str = line[62:73].strip()
-        acceptor2_str = line[74:85].strip()
-
-        for d_str in [donor1_str, donor2_str]:
-            if d_str:
-                offset, energy_str = d_str.split(',')
-                parts = re.findall(r"[-+]?\d*\.\d+", energy_str)
-                if parts:
-                    energy = float(parts[0])
-                else:
-                    continue
-                if not np.isclose(energy, 0.0):
-                    hbonds[res_num]['donor'].append({'offset': int(offset), 'energy': energy})
-
-        for a_str in [acceptor1_str, acceptor2_str]:
-            if a_str:
-                offset, energy_str = a_str.split(',')
-                parts = re.findall(r"[-+]?\d*\.\d+", energy_str)
-                if parts:
-                    energy = float(parts[0])
-                else:
-                    continue
-                if not np.isclose(energy, 0.0):
-                    hbonds[res_num]['acceptor'].append({'offset': int(offset), 'energy': energy})
-
+            
+        # Split the line into fields, handling potential quoted values
+        fields = []
+        in_quotes = False
+        current_field = ""
+        
+        i = 0
+        while i < len(line):
+            char = line[i]
+            if char == '"' or char == "'":
+                in_quotes = not in_quotes
+                current_field += char
+            elif char == ' ' and not in_quotes:
+                if current_field:
+                    fields.append(current_field)
+                    current_field = ""
+                # Skip multiple spaces
+                while i + 1 < len(line) and line[i + 1] == ' ':
+                    i += 1
+            else:
+                current_field += char
+            i += 1
+        
+        if current_field:
+            fields.append(current_field)
+        
+        if len(fields) < len(columns):
+            continue
+            
+        # Extract residue number
+        try:
+            res_num = int(fields[col_indices['label_seq_id']])
+        except (ValueError, IndexError):
+            continue
+            
+        if res_num not in hbonds:
+            hbonds[res_num] = {'donor': [], 'acceptor': []}
+        
+        # Process acceptor bonds (where this residue accepts H-bonds)
+        for acceptor_col, energy_col in [('acceptor_1_label_seq_id', 'acceptor_1_energy'),
+                                        ('acceptor_2_label_seq_id', 'acceptor_2_energy')]:
+            try:
+                partner_res_str = fields[col_indices[acceptor_col]]
+                energy_str = fields[col_indices[energy_col]]
+                
+                if partner_res_str != '?' and energy_str != '?':
+                    partner_res = int(partner_res_str)
+                    energy = float(energy_str)
+                    
+                    if not np.isclose(energy, 0.0):
+                        offset = partner_res - res_num
+                        hbonds[res_num]['acceptor'].append({'offset': offset, 'energy': energy})
+                        
+            except (ValueError, IndexError):
+                continue
+        
+        # Process donor bonds (where this residue donates H-bonds)
+        for donor_col, energy_col in [('donor_1_label_seq_id', 'donor_1_energy'),
+                                     ('donor_2_label_seq_id', 'donor_2_energy')]:
+            try:
+                partner_res_str = fields[col_indices[donor_col]]
+                energy_str = fields[col_indices[energy_col]]
+                
+                if partner_res_str != '?' and energy_str != '?':
+                    partner_res = int(partner_res_str)
+                    energy = float(energy_str)
+                    
+                    if not np.isclose(energy, 0.0):
+                        offset = partner_res - res_num
+                        hbonds[res_num]['donor'].append({'offset': offset, 'energy': energy})
+                        
+            except (ValueError, IndexError):
+                continue
+    
     return hbonds
 
 
