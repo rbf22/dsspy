@@ -21,7 +21,7 @@ run-linter-fix:
 	poetry run ruff check . --fix
 
 run-pylint:
-	poetry run pylint dsspy tests
+	poetry run pylint dsspy test
 
 run-mypy:
 	poetry run mypy --explicit-package-bases dsspy
