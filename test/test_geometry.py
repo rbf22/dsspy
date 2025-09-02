@@ -1,7 +1,11 @@
+"""
+Tests for the geometry module.
+"""
+
 import numpy as np
 import pytest
-from dsspy.geometry import dihedral_angle
 from Bio.PDB.vectors import Vector, calc_dihedral
+from dsspy.geometry import dihedral_angle
 
 
 @pytest.mark.filterwarnings("ignore:invalid value encountered in scalar divide")

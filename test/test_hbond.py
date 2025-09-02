@@ -3,9 +3,12 @@ Tests for H-bond calculation.
 """
 
 import gzip
+from unittest.mock import Mock
 import pytest
+import numpy as np
 from dsspy.io import read_cif
-from dsspy.hbond import calculate_h_bonds
+from dsspy.hbond import calculate_h_bonds, calculate_h_bond_energy, assign_hydrogen_to_residues
+from dsspy.constants import MIN_HBOND_ENERGY
 
 
 def parse_reference_dssp(filepath):
@@ -36,7 +39,7 @@ def parse_reference_dssp(filepath):
                 continue
 
             # If we are inside the loop and see a new header or section, stop
-            if in_loop and (line.startswith("_") or line.startswith("loop_") or line.startswith("data_") or line.startswith("#")):
+            if in_loop and (line.startswith("_") or line.startswith("loop_") or line.startswith("data_") or line.startswith("#")):  # pylint: disable=line-too-long
                 in_loop = False
                 continue
 
@@ -163,3 +166,49 @@ def test_calculate_h_bonds_comparative():
                 print(f"  ref:   {ref_a}")
             assert dsspy_a['offset'] == ref_a['offset']
             assert dsspy_a['energy'] == pytest.approx(ref_a['energy'], abs=1e-1)
+
+def test_calculate_h_bond_energy_minimal_distance():
+    """
+    Tests that the H-bond energy is set to MIN_HBOND_ENERGY when atoms are too close.
+    """
+    donor = Mock()
+    donor.resname = "ALA"
+    donor.h_coord = np.array([0.0, 0.0, 0.0])
+    donor.n_coord = np.array([0.0, 0.0, 1.0])
+    donor.hbond_acceptor = [Mock(), Mock()]
+    donor.hbond_acceptor[0].energy = 0.0
+    donor.hbond_acceptor[1].energy = 0.0
+
+    acceptor = Mock()
+    acceptor.o_coord = np.array([0.0, 0.0, 0.1]) # This will trigger the minimal distance check
+    acceptor.c_coord = np.array([0.0, 1.0, 0.1])
+    acceptor.hbond_donor = [Mock(), Mock()]
+    acceptor.hbond_donor[0].energy = 0.0
+    acceptor.hbond_donor[1].energy = 0.0
+
+    energy = calculate_h_bond_energy(donor, acceptor)
+    assert energy == MIN_HBOND_ENERGY
+
+def test_assign_hydrogen_to_residues():
+    """
+    Tests the assign_hydrogen_to_residues function.
+    """
+    res1 = Mock()
+    res1.resname = "ALA"
+    res1.n_coord = np.array([0.0, 0.0, 0.0])
+    res1.c_coord = np.array([1.0, 0.0, 0.0])
+    res1.o_coord = np.array([1.0, 1.0, 0.0])
+
+    res2 = Mock()
+    res2.resname = "ALA"
+    res2.n_coord = np.array([2.0, 0.0, 0.0])
+
+    residues = [res1, res2]
+    assign_hydrogen_to_residues(residues)
+
+    # Check res1 (no previous residue)
+    np.testing.assert_array_equal(res1.h_coord, res1.n_coord)
+
+    # Check res2
+    expected_h_coord = res2.n_coord + (res1.c_coord - res1.o_coord)
+    np.testing.assert_allclose(res2.h_coord, expected_h_coord)

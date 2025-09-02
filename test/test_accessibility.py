@@ -68,7 +68,8 @@ def test_calculate_accessibility_comparative():
     for res in residues:
         if res.number in reference_accessibilities:
             ref_acc = reference_accessibilities[res.number]
-            # It seems the accessibility is an integer in the reference file, but a float in our calculation.
+            # It seems the accessibility is an integer in the reference file,
+            # but a float in our calculation.
             # Let's round our result for comparison.
             calculated_acc = round(res.accessibility)
             assert calculated_acc == pytest.approx(ref_acc, abs=1)

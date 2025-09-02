@@ -4,6 +4,7 @@ This module handles the output of DSSP files in the classic format.
 
 import datetime
 from .core import HelixType, HelixPositionType
+from .utils import get_sheet_label
 
 # 3-to-1 letter code for amino acids
 AA_CODES = {
@@ -28,17 +29,23 @@ def format_dssp_line(residue):
 
     ss = residue.secondary_structure.value
 
-    helix_flags = ''.join([
-        '>' if residue.helix_flags[ht] == HelixPositionType.START else
-        '<' if residue.helix_flags[ht] == HelixPositionType.END else
-        'X' if residue.helix_flags[ht] == HelixPositionType.START_AND_END else
-        str(ht.value + 3) if residue.helix_flags[ht] == HelixPositionType.MIDDLE and
-        ht != HelixType.PP else
-        'P' if residue.helix_flags[ht] == HelixPositionType.MIDDLE and
-        ht == HelixType.PP else
-        ' '
-        for ht in [HelixType['3_10'], HelixType.ALPHA, HelixType.PI, HelixType.PP]
-    ])
+    helix_flags_list = []
+    for ht in [HelixType.THREE_TEN, HelixType.ALPHA, HelixType.PI, HelixType.PP]:
+        flag = residue.helix_flags[ht]
+        if flag == HelixPositionType.START:
+            helix_flags_list.append('>')
+        elif flag == HelixPositionType.END:
+            helix_flags_list.append('<')
+        elif flag == HelixPositionType.START_AND_END:
+            helix_flags_list.append('X')
+        elif flag == HelixPositionType.MIDDLE:
+            if ht == HelixType.PP:
+                helix_flags_list.append('P')
+            else:
+                helix_flags_list.append(str(ht.value + 3))
+        else:
+            helix_flags_list.append(' ')
+    helix_flags = "".join(helix_flags_list)
 
     bend = 'S' if residue.bend else ' '
 
@@ -47,16 +54,7 @@ def format_dssp_line(residue):
     bp1 = residue.beta_partner[0].residue.number if residue.beta_partner[0].residue else 0
     bp2 = residue.beta_partner[1].residue.number if residue.beta_partner[1].residue else 0
 
-    def _get_sheet_label(sheet_number):
-        if sheet_number == 0:
-            return ' '
-        if 1 <= sheet_number <= 26:
-            return chr(ord('A') + sheet_number - 1)
-        if 27 <= sheet_number <= 52:
-            return chr(ord('a') + sheet_number - 27)
-        return '?'
-
-    sheet = _get_sheet_label(residue.sheet)
+    sheet = get_sheet_label(residue.sheet)
 
     bridgelabel = ' '
     if residue.beta_partner[0].residue:
@@ -87,7 +85,7 @@ def format_dssp_line(residue):
 
     x, y, z = residue.biopython_residue['CA'].get_coord()
 
-    line = (
+    line = (  # pylint: disable=line-too-long
         f"{res_num:>5d}{pdb_seq_num:>5d}{pdb_ins_code:>1}{pdb_strand_id:>1} {aa:>1}  "
         f"{ss:>1}{helix_flags:>4}{bend:>1}{chirality:>1} {bp1:>4d}{bp2:>4d}"
         f"{bridgelabel:>1}{sheet:>1} {acc:>4d} "
@@ -143,7 +141,7 @@ def write_dssp(structure, residues, output_file):
     header_text = _format_header(structure.header)
     output_file.write(header_text + '\n')
 
-    output_file.write("  #  RESIDUE AA STRUCTURE BP1 BP2  ACC     N-H-->O    O-->H-N    "
+    output_file.write("  #  RESIDUE AA STRUCTURE BP1 BP2  ACC     N-H-->O    O-->H-N    "  # pylint: disable=line-too-long
                       "N-H-->O    O-->H-N    TCO  KAPPA ALPHA  PHI   PSI    X-CA   Y-CA   Z-CA\n")
 
     for residue in residues:

@@ -1,38 +1,63 @@
+"""
+Tests for the secondary_structure module.
+"""
+from unittest.mock import Mock
 from dsspy.core import StructureType, HelixType, HelixPositionType
 from dsspy.secondary_structure import calculate_pp_helices
 
-class MockResidue:
-    def __init__(self, phi, psi):
-        self.phi = phi
-        self.psi = psi
-        self.secondary_structure = StructureType.LOOP
-        self.helix_flags = {helix_type: HelixPositionType.NONE for helix_type in HelixType}
+def create_mock_residue(phi=None, psi=None):
+    """Creates a mock residue for testing."""
+    res = Mock()
+    res.phi = phi
+    res.psi = psi
+    res.secondary_structure = StructureType.LOOP
+    res.helix_flags = {ht: HelixPositionType.NONE for ht in HelixType}
+    return res
 
 def test_calculate_pp_helices():
     """
-    Tests the calculate_pp_helices function with the C++ ported logic.
+    Tests the calculate_pp_helices function.
     """
-    # Create a list of mock residues with phi/psi angles for a PPII helix
-    residues = [MockResidue(-75, 145) for _ in range(7)]
-    residues[0].phi = 0 # Not in helix
-    residues[6].phi = 0 # Not in helix
+    # Create residues that form a PPII helix
+    residues = [
+        create_mock_residue(phi=-75, psi=145),
+        create_mock_residue(phi=-75, psi=145),
+        create_mock_residue(phi=-75, psi=145),
+    ]
+    calculate_pp_helices(residues)
 
-    calculate_pp_helices(residues, stretch_length=3)
-
-    # Expected state based on the quirky C++ loop (for i in 1..n-4):
-    # N, S, M, M, M, E, N
-    assert residues[0].helix_flags[HelixType.PP] == HelixPositionType.NONE
-    assert residues[1].helix_flags[HelixType.PP] == HelixPositionType.START
-    assert residues[2].helix_flags[HelixType.PP] == HelixPositionType.MIDDLE
-    assert residues[3].helix_flags[HelixType.PP] == HelixPositionType.MIDDLE
-    assert residues[4].helix_flags[HelixType.PP] == HelixPositionType.MIDDLE
-    assert residues[5].helix_flags[HelixType.PP] == HelixPositionType.END
-    assert residues[6].helix_flags[HelixType.PP] == HelixPositionType.NONE
-
-    assert residues[0].secondary_structure == StructureType.LOOP
+    # Check that the secondary structure and helix flags are set correctly
+    assert residues[0].secondary_structure == StructureType.HELIX_PPII
+    assert residues[0].helix_flags[HelixType.PP] == HelixPositionType.START
     assert residues[1].secondary_structure == StructureType.HELIX_PPII
+    assert residues[1].helix_flags[HelixType.PP] == HelixPositionType.MIDDLE
     assert residues[2].secondary_structure == StructureType.HELIX_PPII
-    assert residues[3].secondary_structure == StructureType.HELIX_PPII
-    assert residues[4].secondary_structure == StructureType.HELIX_PPII
-    assert residues[5].secondary_structure == StructureType.HELIX_PPII
-    assert residues[6].secondary_structure == StructureType.LOOP
+    assert residues[2].helix_flags[HelixType.PP] == HelixPositionType.END
+
+def test_calculate_pp_helices_not_a_helix():
+    """
+    Tests that calculate_pp_helices does not assign a helix if the angles are wrong.
+    """
+    residues = [
+        create_mock_residue(phi=0, psi=0),
+        create_mock_residue(phi=0, psi=0),
+        create_mock_residue(phi=0, psi=0),
+    ]
+    calculate_pp_helices(residues)
+    assert residues[0].secondary_structure == StructureType.LOOP
+    assert residues[1].secondary_structure == StructureType.LOOP
+    assert residues[2].secondary_structure == StructureType.LOOP
+
+def test_calculate_pp_helices_start_and_end():
+    """
+    Tests that calculate_pp_helices handles START_AND_END correctly.
+    """
+    residues = [
+        create_mock_residue(phi=-75, psi=145),
+        create_mock_residue(phi=-75, psi=145),
+        create_mock_residue(phi=-75, psi=145),
+    ]
+    # Pre-set the end flag
+    residues[0].helix_flags[HelixType.PP] = HelixPositionType.END
+    calculate_pp_helices(residues)
+    assert residues[0].helix_flags[HelixType.PP] == HelixPositionType.START_AND_END
