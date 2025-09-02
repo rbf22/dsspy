@@ -1,7 +1,7 @@
 # dsspy: A Python implementation of DSSP
 
 ![Build](https://github.com/rbf22/dsspy/actions/workflows/python-ci.yml/badge.svg)
-![License](https://img.shields.io/github/license/rbf22/dsspy)
+![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)
 
 `dsspy` is a Python package that provides a pure Python implementation of the DSSP algorithm for assigning secondary structure to proteins. This project is a complete rewrite of the original C++ `mkdssp` application, designed for seamless integration into modern Python-based bioinformatics workflows.
 
