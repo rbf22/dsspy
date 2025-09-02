@@ -1,8 +1,4 @@
-.PHONY: build poetry-install dev-install run-tests run-linter run-linter-fix run-pylint run-mypy run-deptry clean
-
-build:
-	cmake -S cpp_legacy -B cpp_legacy/build -DBUILD_PYTHON_MODULE=ON
-	cmake --build cpp_legacy/build
+.PHONY: poetry-install dev-install run-tests run-linter run-linter-fix run-pylint run-mypy run-deptry clean
 
 poetry-install: dev-install
 	@echo "Installation complete. Please activate your poetry shell with 'poetry shell'"
@@ -28,6 +24,3 @@ run-mypy:
 
 run-deptry:
 	poetry run deptry .
-
-clean:
-	rm -rf cpp_legacy/build
