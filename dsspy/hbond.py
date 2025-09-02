@@ -53,53 +53,47 @@ def calculate_h_bond_energy(donor: Residue, acceptor: Residue):
 
     return energy
 
-def assign_hydrogen(residue: Residue):
+def assign_hydrogen_to_residues(residues: list[Residue]):
     """
-    Assign hydrogen position for a residue.
+    Assign hydrogen positions for all residues.
     This is critical for accurate H-bond calculation.
     """
-    # Start with nitrogen position
-    residue.h_coord = residue.n_coord.copy()
-    
-    # For non-proline residues with a previous residue
-    if residue.resname != "PRO" and residue.prev is not None:
-        prev_c = residue.prev.c_coord
-        prev_o = residue.prev.o_coord
+    for i, residue in enumerate(residues):
+        # Start with nitrogen position
+        residue.h_coord = residue.n_coord.copy()
         
-        # Calculate CO vector and normalize it
-        co_vector = prev_c - prev_o
-        co_distance = np.linalg.norm(co_vector)
-        
-        if co_distance > 0:
-            co_unit = co_vector / co_distance
-            # Place hydrogen along the CO vector direction from nitrogen
-            residue.h_coord += co_unit
+        # For non-proline residues with a previous residue
+        if residue.resname != "PRO" and i > 0:
+            prev_residue = residues[i - 1]
+            prev_c = prev_residue.c_coord
+            prev_o = prev_residue.o_coord
+            
+            # Calculate CO vector and normalize it
+            co_vector = prev_c - prev_o
+            co_distance = np.linalg.norm(co_vector)
+            
+            if co_distance > 0:
+                co_unit = co_vector / co_distance
+                # Place hydrogen along the CO vector direction from nitrogen
+                residue.h_coord += co_unit
 
 def calculate_h_bonds(residues: list[Residue]) -> None:
     """Calculate H-bond energies for all pairs of residues."""
-    
-    # First, assign hydrogen positions for all residues
+
+    # Note: H-bond arrays are already initialized in Residue.__init__()
+    # But we need to reset them to ensure clean state
     for res in residues:
-        assign_hydrogen(res)
-    
-    # Initialize H-bond arrays with high energy values
+        res.hbond_acceptor = [HBond(None, 0.0), HBond(None, 0.0)]
+        res.hbond_donor = [HBond(None, 0.0), HBond(None, 0.0)]
+
     for res in residues:
-        if not hasattr(res, 'hbond_acceptor') or res.hbond_acceptor is None:
-            res.hbond_acceptor = [HBond(None, 0.0), HBond(None, 0.0)]
-        if not hasattr(res, 'hbond_donor') or res.hbond_donor is None:
-            res.hbond_donor = [HBond(None, 0.0), HBond(None, 0.0)]
-    
-    # Calculate H-bonds between all residue pairs
+        res.assign_hydrogen()
+
     for i in range(len(residues)):
         for j in range(i + 1, len(residues)):
-            # Skip if residues are too far apart (optimization)
             if np.linalg.norm(residues[i].ca_coord - residues[j].ca_coord) > 9.0:
                 continue
-            
-            # Calculate both directions of hydrogen bonding
+
             calculate_h_bond_energy(residues[i], residues[j])
-            
-            # Don't calculate reverse direction for adjacent residues
-            # as they can't form hydrogen bonds due to geometry
             if j != i + 1:
                 calculate_h_bond_energy(residues[j], residues[i])
