@@ -47,4 +47,4 @@ This will execute the test suite and provide a coverage report.
 
 ## Legacy C++ Version
 
-The original C++ version of `mkdssp` has been moved to the `cpp_legacy` directory. If you need to access or build the C++ code, please refer to the `README.md` file in that directory for instructions.
+The original C++ version of `mkdssp` can be found on the pdbredo github page.
