@@ -1,4 +1,3 @@
-import os
 import gzip
 from io import StringIO
 from dsspy.io import read_pdb, read_cif
@@ -9,8 +8,7 @@ def test_read_pdb():
     Tests reading a PDB file.
     """
     # The original project has test files in the test/ directory.
-    # We can use one of them: test/pdb1cbs.ent.gz
-    pdb_file_path = "cpp_legacy/test/pdb1cbs.ent.gz"
+    pdb_file_path = "test/reference_data/pdb1cbs.ent.gz"
 
     with gzip.open(pdb_file_path, "rt") as f:
         pdb_content = f.read()
@@ -28,7 +26,7 @@ def test_read_cif():
     """
     Tests reading an mmCIF file.
     """
-    cif_file_path = "cpp_legacy/test/1cbs.cif.gz"
+    cif_file_path = "test/reference_data/1cbs.cif.gz"
 
     with gzip.open(cif_file_path, "rt") as f:
         cif_content = f.read()
