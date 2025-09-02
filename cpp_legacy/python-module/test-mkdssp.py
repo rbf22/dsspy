@@ -54,18 +54,18 @@ for res in dssp:
 
 	for i in range(0, 1):
 		(ri, nr, dir) = res.bridge_partner(i)
-		if ri != None:
+		if ri is not None:
 			print("bridge partner ", i, ri.asym_id, ri.seq_id, ri.compound_id, nr, dir)
 
 	for i in range(0, 1):
 		(ri, e) = res.acceptor(i)
-		if ri != None:
+		if ri is not None:
 			print("acceptor ", i, ri.asym_id, ri.seq_id, ri.compound_id, e)
 			print("test bond: ", TestBond(res, ri))
    	
 	for i in range(0, 1):
 		(ri, e) = res.donor(i)
-		if ri != None:
+		if ri is not None:
 			print("donor ", i, ri.asym_id, ri.seq_id, ri.compound_id, e)
 			print("test bond: ", TestBond(res, ri))
 

@@ -4,6 +4,7 @@ from dsspy.geometry import dihedral_angle
 from Bio.PDB.vectors import Vector, calc_dihedral
 
 
+@pytest.mark.filterwarnings("ignore:invalid value encountered in scalar divide")
 def test_dihedral_angle_trans():
     """
     Tests the dihedral_angle function with a trans configuration (180 degrees).
@@ -30,6 +31,8 @@ def test_dihedral_angle_trans():
     assert abs(biopython_angle) == pytest.approx(expected_angle, abs=1e-3)
     assert dsspy_angle == pytest.approx(biopython_angle, abs=1e-3)
 
+
+@pytest.mark.filterwarnings("ignore:invalid value encountered in scalar divide")
 def test_dihedral_angle_cis():
     """
     Tests the dihedral_angle function with a cis configuration (0 degrees).

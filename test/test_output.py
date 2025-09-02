@@ -1,13 +1,7 @@
-import pytest
-from dsspy.output import _format_header, format_dssp_line, write_dssp
+from dsspy.output import _format_header, format_dssp_line
 from dsspy.io import read_cif
 from dsspy.hbond import calculate_h_bonds
 from dsspy.secondary_structure import calculate_beta_sheets
-from Bio.PDB.Structure import Structure
-from Bio.PDB.Model import Model
-from Bio.PDB.Chain import Chain
-from Bio.PDB.Residue import Residue as BioResidue
-import io
 
 def test_format_header():
     """
@@ -61,9 +55,12 @@ def test_format_dssp_line_with_sheets():
 
     # Helper to get sheet label (A-Z, a-z)
     def _get_sheet_label(sheet_number):
-        if sheet_number == 0: return ' '
-        if 1 <= sheet_number <= 26: return chr(ord('A') + sheet_number - 1)
-        if 27 <= sheet_number <= 52: return chr(ord('a') + sheet_number - 27)
+        if sheet_number == 0:
+            return ' '
+        if 1 <= sheet_number <= 26:
+            return chr(ord('A') + sheet_number - 1)
+        if 27 <= sheet_number <= 52:
+            return chr(ord('a') + sheet_number - 27)
         return '?'
 
     sheet_label = _get_sheet_label(bridge_res.sheet)

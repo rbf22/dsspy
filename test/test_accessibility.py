@@ -1,4 +1,3 @@
-import gzip
 import pytest
 import re
 from dsspy.io import read_cif
@@ -40,12 +39,10 @@ def parse_reference_accessibility(filepath):
             if len(parts) > max(seq_id_index, accessibility_index):
                 res_num_str = parts[seq_id_index]
                 acc_str = parts[accessibility_index]
-                if acc_str != '.' and acc_str != '?':
+                if acc_str not in {".", "?"}:
                     accessibilities[int(res_num_str)] = float(acc_str)
-        elif not line.startswith('_'):
-             header_count = 0
-
-
+        elif not line.startswith("_"):
+            header_count = 0
     return accessibilities
 
 def test_calculate_accessibility_comparative():
