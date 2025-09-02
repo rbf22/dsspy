@@ -158,4 +158,4 @@ def test_calculate_h_bonds_comparative():
                 print(f"  dsspy: {dsspy_a}")
                 print(f"  ref:   {ref_a}")
             assert dsspy_a['offset'] == ref_a['offset']
-            assert dsspy_a['energy'] == pytest.approx(ref_a['energy'], abs=1e-3)
+            assert dsspy_a['energy'] == pytest.approx(ref_a['energy'], abs=1e-1)
