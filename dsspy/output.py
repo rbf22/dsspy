@@ -37,19 +37,32 @@ def format_dssp_line(residue):
 
     chirality = '+' if residue.alpha > 0 and residue.alpha != 360 else '-' if residue.alpha < 0 else ' '
 
-    bp1 = residue.beta_partner[0].number if residue.beta_partner[0] else 0
-    bp2 = residue.beta_partner[1].number if residue.beta_partner[1] else 0
+    bp1 = residue.beta_partner[0].residue.number if residue.beta_partner[0].residue else 0
+    bp2 = residue.beta_partner[1].residue.number if residue.beta_partner[1].residue else 0
 
-    # TODO: Implement bridge label and sheet label
+    def _get_sheet_label(sheet_number):
+        if sheet_number == 0:
+            return ' '
+        if 1 <= sheet_number <= 26:
+            return chr(ord('A') + sheet_number - 1)
+        if 27 <= sheet_number <= 52:
+            return chr(ord('a') + sheet_number - 27)
+        return '?'
+
+    sheet = _get_sheet_label(residue.sheet)
+
     bridgelabel = ' '
-    sheet = ' '
+    if residue.beta_partner[0].residue:
+        ladder = residue.beta_partner[0].ladder
+        if ladder is not None:
+            bridgelabel = chr(ord('a') + ladder % 26)
 
     acc = int(residue.accessibility)
 
-    nho1 = f"{residue.hbond_acceptor[0]['residue'].number - res_num},{residue.hbond_acceptor[0]['energy']:.1f}" if residue.hbond_acceptor else "0, 0.0"
-    onh1 = f"{residue.hbond_donor[0]['residue'].number - res_num},{residue.hbond_donor[0]['energy']:.1f}" if residue.hbond_donor else "0, 0.0"
-    nho2 = f"{residue.hbond_acceptor[1]['residue'].number - res_num},{residue.hbond_acceptor[1]['energy']:.1f}" if len(residue.hbond_acceptor) > 1 else "0, 0.0"
-    onh2 = f"{residue.hbond_donor[1]['residue'].number - res_num},{residue.hbond_donor[1]['energy']:.1f}" if len(residue.hbond_donor) > 1 else "0, 0.0"
+    nho1 = f"{residue.hbond_acceptor[0].residue.number - res_num},{residue.hbond_acceptor[0].energy:.1f}" if residue.hbond_acceptor[0].residue else "0, 0.0"
+    onh1 = f"{residue.hbond_donor[0].residue.number - res_num},{residue.hbond_donor[0].energy:.1f}" if residue.hbond_donor[0].residue else "0, 0.0"
+    nho2 = f"{residue.hbond_acceptor[1].residue.number - res_num},{residue.hbond_acceptor[1].energy:.1f}" if residue.hbond_acceptor[1].residue else "0, 0.0"
+    onh2 = f"{residue.hbond_donor[1].residue.number - res_num},{residue.hbond_donor[1].energy:.1f}" if residue.hbond_donor[1].residue else "0, 0.0"
 
     tco = f"{residue.tco:.3f}"
     kappa = f"{residue.kappa:.1f}"
@@ -66,16 +79,49 @@ def format_dssp_line(residue):
 
     return line
 
-def write_dssp(residues, output_file):
+def _format_header(header_dict):
+    """
+    Formats the header dictionary into the classic DSSP header format.
+    """
+    lines = []
+    now = datetime.datetime.now()
+
+    lines.append(f"==== Secondary Structure Definition by the program DSSP, Python version ==== DATE={now.strftime('%Y-%m-%d')}        .")
+    lines.append("REFERENCE W. KABSCH AND C.SANDER, BIOPOLYMERS 22 (1983) 2577-2637")
+
+    head = header_dict.get('head', '').upper()
+    dep_date = header_dict.get('deposition_date', '')
+    id_code = header_dict.get('idcode', '')
+    header_line = f"HEADER    {head:<40s} {dep_date:<9s}   {id_code:<4s}"
+    lines.append(header_line)
+
+    compnd_info = []
+    # The 'compound' entry in biopython is a list of dictionaries.
+    for comp in header_dict.get('compound', []):
+        for key, value in comp.items():
+            compnd_info.append(f"{key.upper()}: {value}")
+    lines.append("COMPND    " + "; ".join(compnd_info))
+
+    source_info = []
+    for src in header_dict.get('source', []):
+        for key, value in src.items():
+            source_info.append(f"{key.upper()}: {value}")
+    lines.append("SOURCE    " + "; ".join(source_info))
+
+    author_line = "AUTHOR    " + header_dict.get('author', '')
+    lines.append(author_line)
+
+    # TODO: Add statistics section
+
+    return "\n".join(lines)
+
+
+def write_dssp(structure, residues, output_file):
     """
     Writes the DSSP output in the classic format to a file.
     """
-    now = datetime.datetime.now()
-    header = f"==== Secondary Structure Definition by the program DSSP, Python version ==== DATE={now.strftime('%Y-%m-%d')}        .\n" \
-             "REFERENCE W. KABSCH AND C.SANDER, BIOPOLYMERS 22 (1983) 2577-2637\n"
-    output_file.write(header)
-
-    # TODO: Add more header lines from the C++ code (COMPND, SOURCE, AUTHOR, etc.)
+    header_text = _format_header(structure.header)
+    output_file.write(header_text + '\n')
 
     output_file.write("  #  RESIDUE AA STRUCTURE BP1 BP2  ACC     N-H-->O    O-->H-N    N-H-->O    O-->H-N    TCO  KAPPA ALPHA  PHI   PSI    X-CA   Y-CA   Z-CA\n")
 

@@ -49,7 +49,7 @@ class Residue:
         self.secondary_structure = StructureType.LOOP
         self.hbond_acceptor = [HBond(None, 0), HBond(None, 0)]
         self.hbond_donor = [HBond(None, 0), HBond(None, 0)]
-        self.beta_partner = [None, None]
+        self.beta_partner = [BridgePartner(None), BridgePartner(None)]
         self.sheet = 0
         self.strand = 0
         self.helix_flags = {helix_type: HelixPositionType.NONE for helix_type in HelixType}
@@ -109,13 +109,30 @@ class Residue:
     def __repr__(self):
         return f"<Residue {self.resname} id={self.id}>"
 
-class Bridge:
-    def __init__(self, r1, r2, type):
-        self.r1 = r1
-        self.r2 = r2
-        self.type = type
-        self.ladder = None
-        self.sheet = None
+class BridgeType(Enum):
+    NONE = 0
+    PARALLEL = 1
+    ANTIPARALLEL = 2
+
+
+class BridgePartner:
+    def __init__(self, residue, ladder=None, parallel=None):
+        self.residue = residue
+        self.ladder = ladder
+        self.parallel = parallel
 
     def __repr__(self):
-        return f"<Bridge {self.r1.id}-{self.r2.id} type={self.type}>"
+        return f"<BridgePartner to {self.residue.id}>"
+
+
+class Bridge:
+    def __init__(self, res1, res2, bridge_type):
+        self.i = [res1]
+        self.j = [res2]
+        self.type = bridge_type
+        self.ladder = None
+        self.sheet = None
+        self.link = set()
+
+    def __repr__(self):
+        return f"<Bridge {self.i[0].id}-{self.j[0].id} type={self.type}>"

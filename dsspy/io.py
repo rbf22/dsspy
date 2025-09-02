@@ -40,7 +40,7 @@ def extract_residues(structure):
                 residues.append(dssp_res)
                 prev_res = dssp_res
 
-    return residues
+    return residues, structure
 
 def read_pdb(pdb_file):
     """

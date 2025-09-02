@@ -131,7 +131,7 @@ def test_calculate_h_bonds_comparative():
     """
     # 1. Run dsspy's H-bond calculation
     with gzip.open('test/reference_data/1cbs.cif.gz', 'rt') as f:
-        residues = read_cif(f)
+        residues, _ = read_cif(f)
     calculate_h_bonds(residues)
 
     # Create a map of residue number to residue object for easy lookup
@@ -277,11 +277,11 @@ def test_calculate_accessibility_comparative():
     """
     # 1. Run dsspy's accessibility calculation
     with open('test/reference_data/1cbs.cif', 'rt') as f:
-        residues = read_cif(f)
+        residues, _ = read_cif(f)
     calculate_accessibility(residues)
 
     # 2. Parse the reference DSSP file
-    reference_accessibilities = parse_reference_accessibility('test/reference_data/1cbs_accessibility.dssp')
+    reference_accessibilities = parse_reference_accessibility('test/reference_data/1cbs-dssp.cif')
 
     # 3. Compare the results
     for res in residues:
