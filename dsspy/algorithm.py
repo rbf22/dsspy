@@ -15,23 +15,24 @@ RADIUS_WATER = 1.40
 def _generate_fibonacci_sphere(n_points: int):
     """
     Generates a sphere of approximately evenly distributed points using the
-    Fibonacci sphere algorithm.
+    Fibonacci sphere algorithm - matching the C++ implementation.
     """
-    points = np.zeros((n_points, 3))
-    phi = np.pi * (3.0 - np.sqrt(5.0))  # Golden angle in radians
-
-    for i in range(n_points):
-        y = 1 - (i / float(n_points - 1)) * 2  # y goes from 1 to -1
-        radius = np.sqrt(1 - y * y)  # radius at y
-
-        theta = phi * i  # Golden angle increment
-
-        x = np.cos(theta) * radius
-        z = np.sin(theta) * radius
-
-        points[i] = [x, y, z]
-
-    return points
+    P = 2 * n_points + 1
+    golden_ratio = (1 + np.sqrt(5.0)) / 2
+    weight = (4 * np.pi) / P
+    
+    points = []
+    for i in range(-n_points, n_points + 1):
+        lat = np.arcsin((2.0 * i) / P)
+        lon = (i % golden_ratio) * 2 * np.pi / golden_ratio
+        
+        points.append([
+            np.sin(lon) * np.cos(lat),
+            np.cos(lon) * np.cos(lat), 
+            np.sin(lat)
+        ])
+    
+    return np.array(points), weight
 
 
 def dihedral_angle(p1, p2, p3, p4):
@@ -126,6 +127,75 @@ def _get_atom_spec(residue: Residue):
             # In the C++ code, all side chain atoms that are not H are treated with a generic radius.
             yield atom.get_coord(), RADIUS_SIDE_ATOM
 
+
+def _atom_intersects_box(atom_coord: np.ndarray, atom_radius: float, box_min: np.ndarray, box_max: np.ndarray) -> bool:
+    """Check if an atom intersects with a bounding box."""
+    return (atom_coord[0] + atom_radius >= box_min[0] and
+            atom_coord[0] - atom_radius <= box_max[0] and
+            atom_coord[1] + atom_radius >= box_min[1] and
+            atom_coord[1] - atom_radius <= box_max[1] and
+            atom_coord[2] + atom_radius >= box_min[2] and
+            atom_coord[2] - atom_radius <= box_max[2])
+
+
+def _calculate_residue_bounding_box(residue: Residue, water_radius: float = RADIUS_WATER):
+    """Calculate bounding box for a residue, matching C++ ExtendBox logic."""
+    box_min = np.array([np.inf, np.inf, np.inf])
+    box_max = np.array([-np.inf, -np.inf, -np.inf])
+    
+    for atom_coord, atom_radius in _get_atom_spec(residue):
+        radius_with_water = atom_radius + 2 * water_radius
+        
+        box_min = np.minimum(box_min, atom_coord - radius_with_water)
+        box_max = np.maximum(box_max, atom_coord + radius_with_water)
+    
+    return box_min, box_max
+
+
+class Candidate:
+    """Matches the C++ accumulator::candidate structure."""
+    def __init__(self, location: np.ndarray, radius_sq: float, distance_sq: float):
+        self.location = location
+        self.radius_sq = radius_sq  # radius squared for efficiency
+        self.distance_sq = distance_sq
+
+
+def _accumulate_occluding_atoms(atom_coord: np.ndarray, atom_radius: float, 
+                               neighboring_residues: list[Residue], 
+                               water_radius: float = RADIUS_WATER) -> list[Candidate]:
+    """
+    Accumulate occluding atoms, matching the C++ accumulator logic.
+    """
+    candidates = []
+    d_with_water = atom_radius + water_radius
+    
+    for residue in neighboring_residues:
+        # Calculate residue bounding box
+        box_min, box_max = _calculate_residue_bounding_box(residue, water_radius)
+        
+        # Check if atom intersects with residue bounding box
+        if _atom_intersects_box(atom_coord, d_with_water, box_min, box_max):
+            for occ_coord, occ_radius in _get_atom_spec(residue):
+                r_with_water = occ_radius + water_radius
+                
+                distance_sq = np.sum((atom_coord - occ_coord) ** 2)
+                
+                test_radius = d_with_water + r_with_water
+                test_sq = test_radius * test_radius
+                
+                if distance_sq < test_sq and distance_sq > 0.0001:
+                    candidate = Candidate(
+                        location=occ_coord - atom_coord,
+                        radius_sq=r_with_water * r_with_water,
+                        distance_sq=distance_sq
+                    )
+                    candidates.append(candidate)
+    
+    # Sort by distance (matching C++ sort_heap behavior)
+    candidates.sort(key=lambda x: x.distance_sq)
+    return candidates
+
+
 def calculate_accessibility(
     residues: list[Residue],
     n_sphere_points: int = 200,
@@ -134,40 +204,16 @@ def calculate_accessibility(
     """
     Calculates the solvent accessibility for each residue in a list.
     Updates the `accessibility` attribute of each Residue object.
+    Now matches C++ implementation more closely.
     """
-    sphere_points = _generate_fibonacci_sphere(n_sphere_points)
-
-    # Pre-calculate residue centers and radii for neighbor search
-    residue_extents = []
-    for res in residues:
-        all_atom_coords = np.array([spec[0] for spec in _get_atom_spec(res)])
-        center = np.mean(all_atom_coords, axis=0)
-        radius = np.max(np.linalg.norm(all_atom_coords - center, axis=1))
-        residue_extents.append({'center': center, 'radius': radius})
+    sphere_points, weight = _generate_fibonacci_sphere(n_sphere_points)
 
     for i, residue in enumerate(residues):
-        # Find neighboring residues
-        neighbors = []
-        res_i_center = residue_extents[i]['center']
-        res_i_radius = residue_extents[i]['radius']
-
-        for j, other_residue in enumerate(residues):
-            res_j_center = residue_extents[j]['center']
-            res_j_radius = residue_extents[j]['radius']
-
-            # A generous cutoff, similar to the C++ version's logic.
-            # Max possible interaction distance is sum of radii + diameter of water.
-            cutoff = res_i_radius + res_j_radius + 2 * water_radius
-
-            dist_sq = np.sum((res_i_center - res_j_center)**2)
-            if dist_sq < cutoff**2:
-                neighbors.append(other_residue)
-
         # Calculate accessibility for the current residue
         total_accessibility = 0.0
         for atom_coord, atom_radius in _get_atom_spec(residue):
             total_accessibility += _calculate_atom_accessibility(
-                atom_coord, atom_radius, neighbors, sphere_points, water_radius
+                atom_coord, atom_radius, residues, sphere_points, weight, water_radius
             )
         residue.accessibility = total_accessibility
 
@@ -175,46 +221,40 @@ def calculate_accessibility(
 def _calculate_atom_accessibility(
     atom_coord: np.ndarray,
     atom_radius: float,
-    neighboring_residues: list[Residue],
+    all_residues: list[Residue],
     sphere_points: np.ndarray,
+    weight: float,
     water_radius: float,
 ) -> float:
-    """Calculates the solvent accessible surface area for a single atom."""
-
-    # Collect all atoms from neighboring residues
-    occluding_atoms = list(itertools.chain.from_iterable(_get_atom_spec(res) for res in neighboring_residues))
-
-    # Add water radius to all radii
+    """Calculates the solvent accessible surface area for a single atom - C++ compatible."""
+    
+    # Collect occluding atoms using C++ logic
+    candidates = _accumulate_occluding_atoms(atom_coord, atom_radius, all_residues, water_radius)
+    
     radius = atom_radius + water_radius
+    surface = 0.0
 
-    # Filter occluding atoms to only those close enough to matter
-    # This is a heuristic to speed up the calculation.
-    # An atom can't occlude if it's further away than the diameter of the test sphere.
-    occluding_atoms_filtered = []
-    for occ_coord, occ_radius in occluding_atoms:
-        dist_sq = np.sum((atom_coord - occ_coord)**2)
-        max_dist = radius + (occ_radius + water_radius)
-        if dist_sq < max_dist**2:
-             occluding_atoms_filtered.append((occ_coord, occ_radius + water_radius))
-
-    n_points = len(sphere_points)
-    accessible_points = 0
-
+    # Generate test points on the sphere surface
     test_points = atom_coord + sphere_points * radius
 
     for test_point in test_points:
         is_accessible = True
-        for occ_coord, occ_radius_with_water in occluding_atoms_filtered:
-            dist_sq = np.sum((test_point - occ_coord)**2)
-            if dist_sq < occ_radius_with_water**2:
+        
+        # Check against all occluding candidates
+        for candidate in candidates:
+            # Calculate distance squared from test point to occluding atom center
+            dist_sq = np.sum((test_point - (atom_coord + candidate.location)) ** 2)
+            
+            if dist_sq < candidate.radius_sq:
                 is_accessible = False
                 break
+        
         if is_accessible:
-            accessible_points += 1
+            surface += weight
 
-    # The area of each point is the total sphere area divided by the number of points
-    sphere_area = 4 * np.pi * radius**2
-    return (accessible_points / n_points) * sphere_area
+    # Return surface area (weight already accounts for point density)
+    return surface * radius * radius
+
 
 def calculate_pp_helices(residues: list[Residue], stretch_length: int = 3):
     """
