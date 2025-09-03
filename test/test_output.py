@@ -160,3 +160,15 @@ def test_format_dssp_line_helix_flags():
     line = format_dssp_line(res)
     assert "   P " in line
     res.helix_flags[HelixType.PP] = HelixPositionType.NONE
+
+def test_format_header_with_compound_and_source():
+    """
+    Tests the _format_header function with compound and source information.
+    """
+    header = {
+        'compound': [{'mol_id': '1', 'molecule': 'test protein'}],
+        'source': [{'mol_id': '1', 'organism_scientific': 'homo sapiens'}]
+    }
+    header_str = _format_header(header)
+    assert "COMPND    MOL_ID: 1; MOLECULE: test protein" in header_str
+    assert "SOURCE    MOL_ID: 1; ORGANISM_SCIENTIFIC: homo sapiens" in header_str

@@ -8,7 +8,23 @@ from .constants import MINIMAL_DISTANCE, MIN_HBOND_ENERGY, COUPLING_CONSTANT
 
 
 def calculate_h_bond_energy(donor: Residue, acceptor: Residue):
-    """Calculate the H-bond energy between two residues."""
+    """Calculate the H-bond energy between two residues based on their coordinates.
+
+    This function implements the H-bond energy calculation from the DSSP paper,
+    which is a simplified electrostatic model. The energy is calculated based
+    on the positions of the donor's amide group (N-H) and the acceptor's
+    carbonyl group (C=O).
+
+    The calculated energy is then used to update the h-bond lists on both the
+    donor and acceptor Residue objects.
+
+    Args:
+        donor (Residue): The residue donating the hydrogen.
+        acceptor (Residue): The residue accepting the hydrogen.
+
+    Returns:
+        float: The calculated H-bond energy in kcal/mol.
+    """
     energy = 0.0
     # Critical fix: Only calculate energy if donor is NOT proline
     # Proline cannot donate hydrogen bonds because its nitrogen is part of a ring
@@ -57,9 +73,15 @@ def calculate_h_bond_energy(donor: Residue, acceptor: Residue):
 
 
 def assign_hydrogen_to_residues(residues: list[Residue]):
-    """
-    Assign hydrogen positions for all residues.
-    This is critical for accurate H-bond calculation.
+    """Assign amide hydrogen positions for all residues in a list.
+
+    The position of the amide hydrogen is not present in most PDB/CIF files.
+    This function estimates its position based on the geometry of the
+    preceding residue's carbonyl group, which is essential for accurate
+    H-bond energy calculations.
+
+    Args:
+        residues (list[Residue]): A list of Residue objects to process.
     """
     for i, residue in enumerate(residues):
         # Start with nitrogen position
@@ -79,7 +101,18 @@ def assign_hydrogen_to_residues(residues: list[Residue]):
 
 
 def calculate_h_bonds(residues: list[Residue]) -> None:
-    """Calculate H-bond energies for all pairs of residues."""
+    """Calculate and assign H-bonds for all residues in the structure.
+
+    This is a main function in the DSSP pipeline. It iterates through all
+    pairs of residues, calculates the H-bond energy between them, and updates
+    the `hbond_acceptor` and `hbond_donor` lists on each Residue object.
+
+    Note: This function has side effects, as it modifies the Residue objects
+    in the input list.
+
+    Args:
+        residues (list[Residue]): A list of all Residue objects in the structure.
+    """
 
     # Note: H-bond arrays are already initialized in Residue.__init__()
     # But we need to reset them to ensure clean state

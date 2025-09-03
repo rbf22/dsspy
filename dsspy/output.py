@@ -16,8 +16,17 @@ AA_CODES = {
 }
 
 def format_dssp_line(residue):
-    """
-    Formats a single residue into a line for the classic DSSP format.
+    """Formats a single residue into a line for the classic DSSP output format.
+
+    This function takes a single Residue object, which must have all its
+    DSSP parameters calculated, and formats it into a single line string
+    that conforms to the classic DSSP file format.
+
+    Args:
+        residue (dsspy.core.Residue): The residue to format.
+
+    Returns:
+        str: A string representing the residue in classic DSSP format.
     """
     # pylint: disable=too-many-locals
     res_num = residue.number
@@ -115,13 +124,13 @@ def _format_header(header_dict):
 
     compnd_info = []
     # The 'compound' entry in biopython is a list of dictionaries.
-    for comp in header_dict.get('compound', []):  # pragma: no cover
+    for comp in header_dict.get('compound', []):
         for key, value in comp.items():
             compnd_info.append(f"{key.upper()}: {value}")
     lines.append("COMPND    " + "; ".join(compnd_info))
 
     source_info = []
-    for src in header_dict.get('source', []):  # pragma: no cover
+    for src in header_dict.get('source', []):
         for key, value in src.items():
             source_info.append(f"{key.upper()}: {value}")
     lines.append("SOURCE    " + "; ".join(source_info))
@@ -135,8 +144,19 @@ def _format_header(header_dict):
 
 
 def write_dssp(structure, residues, output_file):
-    """
-    Writes the DSSP output in the classic format to a file.
+    """Writes the full DSSP output in the classic format to a file.
+
+    This function generates the complete DSSP output, including the header
+    and the per-residue data lines, and writes it to the specified file-like
+    object.
+
+    Args:
+        structure (Bio.PDB.Structure.Structure): The Biopython structure object,
+            used to generate the header.
+        residues (list[dsspy.core.Residue]): The list of Residue objects with
+            all DSSP parameters calculated.
+        output_file (file-like object): An open, writable file handle to write
+            the output to.
     """
     header_text = _format_header(structure.header)
     output_file.write(header_text + '\n')
