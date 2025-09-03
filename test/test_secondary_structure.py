@@ -61,3 +61,19 @@ def test_calculate_pp_helices_start_and_end():
     residues[0].helix_flags[HelixType.PP] = HelixPositionType.END
     calculate_pp_helices(residues)
     assert residues[0].helix_flags[HelixType.PP] == HelixPositionType.START_AND_END
+
+def test_calculate_pp_helices_on_loop():
+    """
+    Tests that calculate_pp_helices correctly assigns a helix to residues
+    that are initially in a LOOP state.
+    """
+    residues = [
+        create_mock_residue(phi=-75, psi=145),
+        create_mock_residue(phi=-75, psi=145),
+        create_mock_residue(phi=-75, psi=145),
+    ]
+    residues[0].secondary_structure = StructureType.LOOP
+
+    calculate_pp_helices(residues)
+
+    assert residues[0].secondary_structure == StructureType.HELIX_PPII

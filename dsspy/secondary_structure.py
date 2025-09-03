@@ -62,11 +62,11 @@ def calculate_beta_sheets(residues: list[Residue]):
             return BridgeType.NONE
 
         # Pattern for parallel bridge
-        if (_test_bond(c, e) and _test_bond(e, a)) or (_test_bond(f, b) and _test_bond(b, d)):
+        if (_test_bond(a, e) and _test_bond(e, c)) or (_test_bond(d, b) and _test_bond(b, f)):
             return BridgeType.PARALLEL
 
         # Pattern for anti-parallel bridge
-        if (_test_bond(c, d) and _test_bond(f, a)) or (_test_bond(e, b) and _test_bond(b, e)):
+        if (_test_bond(b, e) and _test_bond(e, b)) or (_test_bond(a, f) and _test_bond(d, c)):
             return BridgeType.ANTIPARALLEL
 
         return BridgeType.NONE
@@ -76,6 +76,9 @@ def calculate_beta_sheets(residues: list[Residue]):
     for i, res1 in enumerate(residues):
         for j in range(i + 1, len(residues)):
             res2 = residues[j]
+
+            if res1.biopython_residue.get_parent() != res2.biopython_residue.get_parent():
+                continue
 
             # Residues in a bridge must be separated by at least 2
             if abs(res1.number - res2.number) < 3:
