@@ -50,6 +50,7 @@ poetry run dsspy --help
 
 `dsspy` can also be used as a Python library. It processes protein structures in a sequential pipeline. Here is a complete example of how to read a structure from a CIF file, calculate all secondary structure features, and write the results to a classic DSSP file.
 
+
 ```python
 import io
 from dsspy.io import read_cif
