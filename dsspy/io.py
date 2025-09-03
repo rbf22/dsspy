@@ -6,9 +6,19 @@ from Bio.PDB import PDBParser, MMCIFParser
 from .core import Residue, ChainBreakType
 
 def extract_residues(structure):
-    """
-    Extracts residues from a Biopython structure object and returns a list of
-    dsspy.core.Residue objects.
+    """Extracts and numbers residues from a Biopython structure.
+
+    This function iterates through a Biopython Structure object, creates a
+    dsspy.core.Residue object for each valid amino acid residue, and sets
+    up chain break information and links between adjacent residues.
+
+    Args:
+        structure (Bio.PDB.Structure.Structure): The Biopython structure object.
+
+    Returns:
+        tuple[list[dsspy.core.Residue], Bio.PDB.Structure.Structure]: A tuple
+        containing the list of extracted Residue objects and the original
+        structure object.
     """
     residues = []
     res_number = 0
@@ -51,16 +61,30 @@ def extract_residues(structure):
     return residues, structure
 
 def read_pdb(pdb_file):
-    """
-    Reads a PDB file and returns a list of dsspy.core.Residue objects.
+    """Reads a PDB file and extracts dsspy Residue objects.
+
+    Args:
+        pdb_file (file-like object): An open file handle to a PDB file.
+
+    Returns:
+        tuple[list[dsspy.core.Residue], Bio.PDB.Structure.Structure]: A tuple
+        containing the list of extracted Residue objects and the parsed
+        Biopython structure object.
     """
     parser = PDBParser()
     structure = parser.get_structure("protein", pdb_file)
     return extract_residues(structure)
 
 def read_cif(cif_file):
-    """
-    Reads an mmCIF file and returns a list of dsspy.core.Residue objects.
+    """Reads an mmCIF file and extracts dsspy Residue objects.
+
+    Args:
+        cif_file (file-like object): An open file handle to an mmCIF file.
+
+    Returns:
+        tuple[list[dsspy.core.Residue], Bio.PDB.Structure.Structure]: A tuple
+        containing the list of extracted Residue objects and the parsed
+        Biopython structure object.
     """
     parser = MMCIFParser()
     structure = parser.get_structure("protein", cif_file)

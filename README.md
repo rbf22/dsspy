@@ -18,9 +18,38 @@ This project uses [Poetry](https://python-poetry.org/) for dependency management
     poetry install
     ```
 
-## Usage
+## Command-Line Usage
 
-`dsspy` processes protein structures in a sequential pipeline. Here is a complete example of how to read a structure from a CIF file, calculate all secondary structure features, and write the results to a classic DSSP file.
+This package provides a command-line tool, `dsspy`, for running DSSP calculations directly from your terminal.
+
+### Basic Usage
+
+To run the calculation on a PDB or mmCIF file, simply provide the input file path. The DSSP output will be printed to standard output.
+
+```console
+poetry run dsspy test/reference_data/1cbs.cif
+```
+
+### Writing to a File
+
+You can also specify an output file using the `-o` or `--output-file` option:
+
+```console
+poetry run dsspy test/reference_data/1cbs.cif -o 1cbs.dssp
+```
+
+### Getting Help
+
+For a full list of options, use the `--help` flag:
+
+```console
+poetry run dsspy --help
+```
+
+## Library Usage
+
+`dsspy` can also be used as a Python library. It processes protein structures in a sequential pipeline. Here is a complete example of how to read a structure from a CIF file, calculate all secondary structure features, and write the results to a classic DSSP file.
+
 
 ```python
 import io

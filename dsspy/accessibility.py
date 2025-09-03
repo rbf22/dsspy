@@ -120,10 +120,23 @@ def calculate_accessibility(
     n_sphere_points: int = 200,
     water_radius: float = RADIUS_WATER,
 ):
-    """
-    Calculates the solvent accessibility for each residue in a list.
-    Updates the `accessibility` attribute of each Residue object.
-    Now matches C++ implementation more closely.
+    """Calculates and assigns solvent accessibility for each residue.
+
+    This function implements a Shrake & Rupley style algorithm to calculate
+    the solvent accessible surface area (SASA) for each residue. It does this
+    by creating a sphere of points around each atom and checking how many of
+    these points are occluded by other atoms.
+
+    Note: This function has side effects, as it modifies the `accessibility`
+    attribute on the Residue objects in the input list.
+
+    Args:
+        residues (list[Residue]): A list of all Residue objects in the structure.
+        n_sphere_points (int, optional): The number of points to generate on the
+            surface of the sphere around each atom for the accessibility check.
+            More points are more accurate but slower. Defaults to 200.
+        water_radius (float, optional): The radius of a water molecule, used as
+            the probe radius. Defaults to RADIUS_WATER.
     """
     sphere_points, weight = _generate_fibonacci_sphere(n_sphere_points)
     sphere = Sphere(points=sphere_points, weight=weight)

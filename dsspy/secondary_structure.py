@@ -14,9 +14,18 @@ from .core import (
 
 
 def calculate_beta_sheets(residues: list[Residue]):
-    """
-    Calculates beta sheets, ladders, and bridges from H-bond patterns.
-    This is a Python port of the `CalculateBetaSheets` function from the C++ dssp implementation.
+    """Calculates and assigns beta sheet information based on H-bond patterns.
+
+    This function identifies beta bridges, extends them into ladders, and groups
+    ladders into sheets. The results are assigned back to the `Residue` objects
+    in the input list. This is a core part of the DSSP algorithm.
+
+    Note: This function has side effects, as it modifies the Residue objects
+    in the input list.
+
+    Args:
+        residues (list[Residue]): A list of all Residue objects in the structure.
+            These objects must have their H-bond information pre-calculated.
     """
     # pylint: disable=too-many-locals,too-many-branches,too-many-statements
     max_hbond_energy = -0.5
@@ -88,7 +97,7 @@ def calculate_beta_sheets(residues: list[Residue]):
             if bridge_type != BridgeType.NONE:
                 bridges.append(Bridge(res1, res2, bridge_type))
 
-    print(f"Found {len(bridges)} initial bridges")
+    # print(f"Found {len(bridges)} initial bridges")
 
     # 2. Extend ladders (with bulge logic)
     bridges.sort(key=lambda b: (b.i[0].biopython_residue.get_parent().id, b.i[0].number))
@@ -131,7 +140,7 @@ def calculate_beta_sheets(residues: list[Residue]):
                 j += 1
         i += 1
 
-    print(f"Found {len(bridges)} ladders after extension")
+    # print(f"Found {len(bridges)} ladders after extension")
 
     # 3. Create sheets from linked ladders
     ladderset = set(bridges)
@@ -206,8 +215,19 @@ def calculate_beta_sheets(residues: list[Residue]):
                 res.sheet = bridge.sheet
 
 def calculate_pp_helices(residues: list[Residue], stretch_length: int = 3):
-    """
-    Identifies Polyproline II (PPII) helices based on phi/psi angles.
+    """Identifies Polyproline II (PPII) helices based on phi/psi angles.
+
+    This function scans through the residues and identifies stretches that have
+    the characteristic phi/psi angles of a Polyproline II helix.
+
+    Note: This function has side effects, as it modifies the Residue objects
+    in the input list.
+
+    Args:
+        residues (list[Residue]): A list of all Residue objects in the structure.
+        stretch_length (int, optional): The minimum number of consecutive
+            residues that must match the PPII criteria to be considered a helix.
+            Defaults to 3.
     """
     n_residues = len(residues)
     if n_residues < stretch_length:
